@@ -1,0 +1,19 @@
+{
+    "name": "event-orchestrator-frontend",
+    "packageManager": "npm@10.9.4",
+    "private": true,
+    "scripts": {
+        "build": "turbo run build",
+        "dev": "turbo run dev",
+        "lint": "turbo run lint",
+        "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    },
+    "devDependencies": {
+        "turbo": "latest",
+        "prettier": "^3.0.0"
+    },
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ]
+}

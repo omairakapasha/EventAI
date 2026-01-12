@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-orchestrator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-orchestrator
+  template:
+    metadata:
+      labels:
+        app: event-orchestrator
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "event-orchestrator"
+        dapr.io/app-port: "8000"
+    spec:
+      containers:
+      - name: event-orchestrator
+        image: event-orchestrator:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: gemini-secret
+              key: api-key
+        - name: VENDOR_PORTAL_API_URL
+          value: "http://vendor-portal-service/api/v1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-orchestrator
+spec:
+  selector:
+    app: event-orchestrator
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
+  type: LoadBalancer

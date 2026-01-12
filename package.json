@@ -1,0 +1,27 @@
+{
+    "name": "vendor-management-system",
+    "version": "1.0.0",
+    "description": "Vendor Management System - Full Stack Application",
+    "private": true,
+    "scripts": {
+        "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ../event-orchestrator-frontend && npm install",
+        "dev": "concurrently --kill-others-on-fail \"npm:start:*\"",
+        "start:backend": "cd backend && npm run dev",
+        "start:frontend": "cd frontend && npm run dev",
+        "start:portals": "cd event-orchestrator-frontend && npm run dev",
+        "dev:docker": "docker compose up -d postgres redis && npm run dev",
+        "build": "npm run build:backend && npm run build:frontend && npm run build:portals",
+        "build:backend": "cd backend && npm run build",
+        "build:frontend": "cd frontend && npm run build",
+        "build:portals": "cd event-orchestrator-frontend && npm run build",
+        "docker:up": "docker compose up -d",
+        "docker:down": "docker compose down",
+        "docker:logs": "docker compose logs -f"
+    },
+    "devDependencies": {
+        "concurrently": "^9.1.2"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    }
+}

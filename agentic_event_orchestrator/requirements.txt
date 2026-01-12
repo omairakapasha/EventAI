@@ -1,0 +1,8 @@
+openai
+pydantic
+python-dotenv
+requests
+chainlit
+ortools
+google-generativeai
+mcp
