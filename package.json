@@ -1,27 +1,23 @@
 {
-    "name": "vendor-management-system",
+    "name": "event-ai",
     "version": "1.0.0",
-    "description": "Vendor Management System - Full Stack Application",
     "private": true,
+    "description": "Event-AI - Full Stack Application",
     "scripts": {
-        "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ../event-orchestrator-frontend && npm install",
-        "dev": "concurrently --kill-others-on-fail \"npm:start:*\"",
-        "start:backend": "cd backend && npm run dev",
-        "start:frontend": "cd frontend && npm run dev",
-        "start:portals": "cd event-orchestrator-frontend && npm run dev",
-        "dev:docker": "docker compose up -d postgres redis && npm run dev",
-        "build": "npm run build:backend && npm run build:frontend && npm run build:portals",
-        "build:backend": "cd backend && npm run build",
-        "build:frontend": "cd frontend && npm run build",
-        "build:portals": "cd event-orchestrator-frontend && npm run build",
-        "docker:up": "docker compose up -d",
-        "docker:down": "docker compose down",
-        "docker:logs": "docker compose logs -f"
+        "build": "turbo run build",
+        "dev": "turbo run dev",
+        "lint": "turbo run lint",
+        "format": "prettier --write \"**/*.{ts,tsx,md}\""
     },
     "devDependencies": {
-        "concurrently": "^9.1.2"
+        "concurrently": "^9.1.2",
+        "turbo": "latest",
+        "prettier": "^3.0.0"
     },
     "engines": {
         "node": ">=20.0.0"
+    },
+    "overrides": {
+        "nodemailer": "7.0.13"
     }
 }
