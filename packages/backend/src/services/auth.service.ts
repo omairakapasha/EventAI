@@ -1,13 +1,13 @@
 import bcrypt from 'bcryptjs';
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
 import crypto from 'crypto';
 import { config } from '../config/env.js';
-import { query, queryOne, transaction } from '../config/database.js';
+import { prisma } from '../config/prisma.js';
 import { sessionStore } from '../config/redis.js';
 import { logger } from '../utils/logger.js';
-import { VendorUser, Vendor, UserRole } from '../types/index.js';
+import { UserRole, type Vendor, type VendorUser } from '../generated/client';
 import { RegisterInput, LoginInput } from '../schemas/index.js';
 
 const SALT_ROUNDS = 12;
@@ -53,7 +53,7 @@ class AuthService {
         return jwt.sign(
             { ...payload, type: 'access' },
             config.jwt.secret,
-            { expiresIn: config.jwt.expiresIn }
+            { expiresIn: config.jwt.expiresIn } as jwt.SignOptions
         );
     }
 
@@ -61,7 +61,7 @@ class AuthService {
         return jwt.sign(
             { ...payload, type: 'refresh' },
             config.jwt.refreshSecret,
-            { expiresIn: config.jwt.refreshExpiresIn }
+            { expiresIn: config.jwt.refreshExpiresIn } as jwt.SignOptions
         );
     }
 
@@ -76,41 +76,35 @@ class AuthService {
     // ============ REGISTRATION ============
 
     async register(input: RegisterInput): Promise<{ vendor: Vendor; user: VendorUser }> {
-        return transaction(async (client) => {
+        return prisma.$transaction(async (tx) => {
             // Check if email exists
-            const existingUser = await queryOne<VendorUser>(
-                'SELECT id FROM vendor_users WHERE email = $1',
-                [input.email]
-            );
+            const existingUser = await tx.vendorUser.findUnique({
+                where: { email: input.email },
+            });
 
             if (existingUser) {
                 throw new Error('Email already registered');
             }
 
-            const existingVendor = await queryOne<Vendor>(
-                'SELECT id FROM vendors WHERE contact_email = $1',
-                [input.contactEmail]
-            );
+            const existingVendor = await tx.vendor.findUnique({
+                where: { contactEmail: input.contactEmail },
+            });
 
             if (existingVendor) {
                 throw new Error('Business email already registered');
             }
 
             // Create vendor
-            const vendorResult = await client.query(
-                `INSERT INTO vendors (name, business_type, contact_email, phone, address, website)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING *`,
-                [
-                    input.vendorName,
-                    input.businessType || null,
-                    input.contactEmail,
-                    input.phone || null,
-                    JSON.stringify(input.address || {}),
-                    input.website || null,
-                ]
-            );
-            const vendor = this.mapVendorRow(vendorResult.rows[0]);
+            const vendor = await tx.vendor.create({
+                data: {
+                    name: input.vendorName,
+                    businessType: input.businessType || null,
+                    contactEmail: input.contactEmail,
+                    phone: input.phone || null,
+                    address: input.address || {},
+                    website: input.website || null,
+                },
+            });
 
             // Hash password
             const passwordHash = await this.hashPassword(input.password);
@@ -120,21 +114,18 @@ class AuthService {
             const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
             // Create user as owner
-            const userResult = await client.query(
-                `INSERT INTO vendor_users (vendor_id, email, password_hash, first_name, last_name, role, email_verification_token, email_verification_expires)
-         VALUES ($1, $2, $3, $4, $5, 'owner', $6, $7)
-         RETURNING *`,
-                [
-                    vendor.id,
-                    input.email,
+            const user = await tx.vendorUser.create({
+                data: {
+                    vendorId: vendor.id,
+                    email: input.email,
                     passwordHash,
-                    input.firstName,
-                    input.lastName,
+                    firstName: input.firstName,
+                    lastName: input.lastName,
+                    role: 'owner',
                     emailVerificationToken,
                     emailVerificationExpires,
-                ]
-            );
-            const user = this.mapUserRow(userResult.rows[0]);
+                },
+            });
 
             logger.info('Vendor registered', { vendorId: vendor.id, email: input.email });
 
@@ -145,78 +136,81 @@ class AuthService {
     // ============ LOGIN ============
 
     async login(input: LoginInput, ipAddress?: string): Promise<AuthResult> {
-        const user = await queryOne<any>(
-            `SELECT vu.*, v.name as vendor_name, v.status as vendor_status
-       FROM vendor_users vu
-       JOIN vendors v ON vu.vendor_id = v.id
-       WHERE vu.email = $1`,
-            [input.email]
-        );
+        const user = await prisma.vendorUser.findUnique({
+            where: { email: input.email },
+            include: {
+                vendor: {
+                    select: { name: true, status: true },
+                },
+            },
+        });
 
         if (!user) {
             throw new Error('Invalid email or password');
         }
 
         // Check if account is locked
-        if (user.locked_until && new Date(user.locked_until) > new Date()) {
-            const unlockTime = new Date(user.locked_until).toISOString();
+        if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
+            const unlockTime = new Date(user.lockedUntil).toISOString();
             throw new Error(`Account locked until ${unlockTime}. Too many failed login attempts.`);
         }
 
         // Verify password
-        const isValidPassword = await this.verifyPassword(input.password, user.password_hash);
+        const isValidPassword = await this.verifyPassword(input.password, user.passwordHash);
 
         if (!isValidPassword) {
-            await this.handleFailedLogin(user.id, user.failed_login_attempts);
+            await this.handleFailedLogin(user.id, user.failedLoginAttempts);
             throw new Error('Invalid email or password');
         }
 
         // Check 2FA
-        if (user.two_factor_enabled) {
+        if (user.twoFactorEnabled) {
             if (!input.twoFactorCode) {
                 return {
                     requiresTwoFactor: true,
                 } as AuthResult;
             }
 
-            const isValid2FA = this.verify2FACode(user.two_factor_secret, input.twoFactorCode);
+            const isValid2FA = this.verify2FACode(user.twoFactorSecret!, input.twoFactorCode);
             if (!isValid2FA) {
                 throw new Error('Invalid 2FA code');
             }
         }
 
         // Check email verification
-        if (!user.email_verified) {
+        if (!user.emailVerified) {
             throw new Error('Please verify your email before logging in');
         }
 
         // Check vendor status
-        if (user.vendor_status === 'SUSPENDED') {
+        if (user.vendor.status === 'SUSPENDED') {
             throw new Error('Your vendor account has been suspended');
         }
 
-        if (user.vendor_status === 'DEACTIVATED') {
+        if (user.vendor.status === 'DEACTIVATED') {
             throw new Error('Your vendor account has been deactivated');
         }
 
         // Update login info and reset failed attempts
-        await query(
-            `UPDATE vendor_users 
-       SET last_login_at = NOW(), last_login_ip = $1, failed_login_attempts = 0, locked_until = NULL
-       WHERE id = $2`,
-            [ipAddress, user.id]
-        );
+        await prisma.vendorUser.update({
+            where: { id: user.id },
+            data: {
+                lastLoginAt: new Date(),
+                lastLoginIp: ipAddress || null,
+                failedLoginAttempts: 0,
+                lockedUntil: null,
+            },
+        });
 
         // Get full vendor data
-        const vendor = await queryOne<any>(
-            'SELECT * FROM vendors WHERE id = $1',
-            [user.vendor_id]
-        );
+        const vendor = await prisma.vendor.findUniqueOrThrow({
+            where: { id: user.vendorId },
+        });
 
         // Generate tokens
         const tokenPayload = {
             userId: user.id,
-            vendorId: user.vendor_id,
+            vendorId: user.vendorId,
             email: user.email,
             role: user.role,
         };
@@ -229,9 +223,12 @@ class AuthService {
 
         logger.info('User logged in', { userId: user.id, email: user.email });
 
+        // Omit sensitive fields
+        const { passwordHash, twoFactorSecret, twoFactorBackupCodes, ...safeUser } = user;
+
         return {
-            user: this.mapUserRow(user),
-            vendor: this.mapVendorRow(vendor),
+            user: safeUser as any,
+            vendor,
             accessToken,
             refreshToken,
         };
@@ -286,10 +283,10 @@ class AuthService {
     // ============ PASSWORD RESET ============
 
     async forgotPassword(email: string): Promise<string> {
-        const user = await queryOne<VendorUser>(
-            'SELECT id FROM vendor_users WHERE email = $1',
-            [email]
-        );
+        const user = await prisma.vendorUser.findUnique({
+            where: { email },
+            select: { id: true },
+        });
 
         if (!user) {
             // Don't reveal if email exists
@@ -299,12 +296,13 @@ class AuthService {
         const resetToken = crypto.randomBytes(32).toString('hex');
         const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-        await query(
-            `UPDATE vendor_users 
-       SET password_reset_token = $1, password_reset_expires = $2
-       WHERE id = $3`,
-            [resetToken, resetExpires, user.id]
-        );
+        await prisma.vendorUser.update({
+            where: { id: user.id },
+            data: {
+                passwordResetToken: resetToken,
+                passwordResetExpires: resetExpires,
+            },
+        });
 
         // TODO: Send email with reset link
         logger.info('Password reset requested', { userId: user.id });
@@ -313,11 +311,13 @@ class AuthService {
     }
 
     async resetPassword(token: string, newPassword: string): Promise<void> {
-        const user = await queryOne<VendorUser>(
-            `SELECT id FROM vendor_users 
-       WHERE password_reset_token = $1 AND password_reset_expires > NOW()`,
-            [token]
-        );
+        const user = await prisma.vendorUser.findFirst({
+            where: {
+                passwordResetToken: token,
+                passwordResetExpires: { gt: new Date() },
+            },
+            select: { id: true },
+        });
 
         if (!user) {
             throw new Error('Invalid or expired reset token');
@@ -325,12 +325,14 @@ class AuthService {
 
         const passwordHash = await this.hashPassword(newPassword);
 
-        await query(
-            `UPDATE vendor_users 
-       SET password_hash = $1, password_reset_token = NULL, password_reset_expires = NULL
-       WHERE id = $2`,
-            [passwordHash, user.id]
-        );
+        await prisma.vendorUser.update({
+            where: { id: user.id },
+            data: {
+                passwordHash,
+                passwordResetToken: null,
+                passwordResetExpires: null,
+            },
+        });
 
         // Invalidate all sessions
         await sessionStore.invalidateAllRefreshTokens(user.id);
@@ -341,29 +343,38 @@ class AuthService {
     // ============ EMAIL VERIFICATION ============
 
     async verifyEmail(token: string): Promise<void> {
-        const result = await query(
-            `UPDATE vendor_users 
-       SET email_verified = TRUE, email_verified_at = NOW(), 
-           email_verification_token = NULL, email_verification_expires = NULL
-       WHERE email_verification_token = $1 AND email_verification_expires > NOW()
-       RETURNING id`,
-            [token]
-        );
+        const user = await prisma.vendorUser.findFirst({
+            where: {
+                emailVerificationToken: token,
+                emailVerificationExpires: { gt: new Date() },
+            },
+            select: { id: true },
+        });
 
-        if (result.length === 0) {
+        if (!user) {
             throw new Error('Invalid or expired verification token');
         }
 
-        logger.info('Email verified', { userId: result[0].id });
+        await prisma.vendorUser.update({
+            where: { id: user.id },
+            data: {
+                emailVerified: true,
+                emailVerifiedAt: new Date(),
+                emailVerificationToken: null,
+                emailVerificationExpires: null,
+            },
+        });
+
+        logger.info('Email verified', { userId: user.id });
     }
 
     // ============ 2FA ============
 
     async setup2FA(userId: string): Promise<TwoFactorSetup> {
-        const user = await queryOne<VendorUser>(
-            'SELECT email FROM vendor_users WHERE id = $1',
-            [userId]
-        );
+        const user = await prisma.vendorUser.findUnique({
+            where: { id: userId },
+            select: { email: true },
+        });
 
         if (!user) {
             throw new Error('User not found');
@@ -397,37 +408,41 @@ class AuthService {
             backupCodes.map((code) => this.hashPassword(code))
         );
 
-        await query(
-            `UPDATE vendor_users 
-       SET two_factor_enabled = TRUE, two_factor_secret = $1, two_factor_backup_codes = $2
-       WHERE id = $3`,
-            [secret, hashedBackupCodes, userId]
-        );
+        await prisma.vendorUser.update({
+            where: { id: userId },
+            data: {
+                twoFactorEnabled: true,
+                twoFactorSecret: secret,
+                twoFactorBackupCodes: hashedBackupCodes,
+            },
+        });
 
         logger.info('2FA enabled', { userId });
     }
 
     async disable2FA(userId: string, password: string): Promise<void> {
-        const user = await queryOne<any>(
-            'SELECT password_hash FROM vendor_users WHERE id = $1',
-            [userId]
-        );
+        const user = await prisma.vendorUser.findUnique({
+            where: { id: userId },
+            select: { passwordHash: true },
+        });
 
         if (!user) {
             throw new Error('User not found');
         }
 
-        const isValidPassword = await this.verifyPassword(password, user.password_hash);
+        const isValidPassword = await this.verifyPassword(password, user.passwordHash);
         if (!isValidPassword) {
             throw new Error('Invalid password');
         }
 
-        await query(
-            `UPDATE vendor_users 
-       SET two_factor_enabled = FALSE, two_factor_secret = NULL, two_factor_backup_codes = NULL
-       WHERE id = $1`,
-            [userId]
-        );
+        await prisma.vendorUser.update({
+            where: { id: userId },
+            data: {
+                twoFactorEnabled: false,
+                twoFactorSecret: null,
+                twoFactorBackupCodes: [],
+            },
+        });
 
         logger.info('2FA disabled', { userId });
     }
@@ -451,72 +466,20 @@ class AuthService {
 
     private async handleFailedLogin(userId: string, currentAttempts: number): Promise<void> {
         const newAttempts = currentAttempts + 1;
-        let lockedUntil = null;
+        let lockedUntil: Date | null = null;
 
         if (newAttempts >= LOCKOUT_THRESHOLD) {
             lockedUntil = new Date(Date.now() + LOCKOUT_DURATION);
             logger.warn('Account locked due to failed login attempts', { userId });
         }
 
-        await query(
-            `UPDATE vendor_users 
-       SET failed_login_attempts = $1, locked_until = $2
-       WHERE id = $3`,
-            [newAttempts, lockedUntil, userId]
-        );
-    }
-
-    private mapVendorRow(row: any): Vendor {
-        return {
-            id: row.id,
-            name: row.name,
-            businessType: row.business_type,
-            contactEmail: row.contact_email,
-            phone: row.phone,
-            address: row.address || {},
-            description: row.description,
-            logoUrl: row.logo_url,
-            website: row.website,
-            verified: row.verified,
-            verifiedAt: row.verified_at,
-            verifiedBy: row.verified_by,
-            status: row.status,
-            tier: row.tier,
-            apiEnabled: row.api_enabled,
-            apiConfig: row.api_config || {},
-            serviceAreas: row.service_areas || [],
-            settings: row.settings || {},
-            metadata: row.metadata || {},
-            createdAt: row.created_at,
-            updatedAt: row.updated_at,
-        };
-    }
-
-    private mapUserRow(row: any): Omit<VendorUser, 'passwordHash' | 'twoFactorSecret' | 'twoFactorBackupCodes'> {
-        return {
-            id: row.id,
-            vendorId: row.vendor_id,
-            email: row.email,
-            firstName: row.first_name,
-            lastName: row.last_name,
-            role: row.role,
-            phone: row.phone,
-            avatarUrl: row.avatar_url,
-            twoFactorEnabled: row.two_factor_enabled,
-            emailVerified: row.email_verified,
-            emailVerifiedAt: row.email_verified_at,
-            emailVerificationToken: row.email_verification_token,
-            emailVerificationExpires: row.email_verification_expires,
-            passwordResetToken: row.password_reset_token,
-            passwordResetExpires: row.password_reset_expires,
-            lastLoginAt: row.last_login_at,
-            lastLoginIp: row.last_login_ip,
-            failedLoginAttempts: row.failed_login_attempts,
-            lockedUntil: row.locked_until,
-            preferences: row.preferences || {},
-            createdAt: row.created_at,
-            updatedAt: row.updated_at,
-        } as Omit<VendorUser, 'passwordHash' | 'twoFactorSecret' | 'twoFactorBackupCodes'>;
+        await prisma.vendorUser.update({
+            where: { id: userId },
+            data: {
+                failedLoginAttempts: newAttempts,
+                lockedUntil,
+            },
+        });
     }
 }
 

@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3002",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@event-ai/ui": "workspace:*",
     "@hookform/resolvers": "^5.2.2",
-    "@event-ai/ui": "*",
     "@tanstack/react-query": "^5.90.16",
     "axios": "^1.13.2",
     "lucide-react": "^0.562.0",

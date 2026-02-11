@@ -14,7 +14,7 @@ import {
 } from '../schemas/index.js';
 import { logger } from '../utils/logger.js';
 
-const router = Router();
+const router: Router = Router();
 
 // POST /api/v1/vendors/register
 router.post(
@@ -204,7 +204,7 @@ router.get(
     '/verify-email/:token',
     async (req: Request, res: Response, next: NextFunction) => {
         try {
-            await authService.verifyEmail(req.params.token);
+            await authService.verifyEmail(req.params.token as string);
 
             res.json({
                 message: 'Email verified successfully. You can now login.',

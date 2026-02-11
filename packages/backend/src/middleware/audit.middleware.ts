@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { query } from '../config/database.js';
+import { prisma } from '../config/prisma.js';
 import { logger } from '../utils/logger.js';
-import { AuditAction, EntityType } from '../types/index.js';
+import { AuditAction, EntityType } from '../generated/client';
 
 interface AuditContext {
     action: AuditAction;
@@ -56,25 +56,21 @@ export async function createAuditLog(
             }
         }
 
-        await query(
-            `INSERT INTO audit_logs (
-        vendor_id, user_id, action, entity_type, entity_id,
-        old_value, new_value, changes, ip_address, user_agent, request_id
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-            [
+        await prisma.auditLog.create({
+            data: {
                 vendorId,
                 userId,
                 action,
                 entityType,
                 entityId,
-                oldValue ? JSON.stringify(oldValue) : null,
-                newValue ? JSON.stringify(newValue) : null,
-                changes ? JSON.stringify(changes) : null,
-                req.ip,
-                req.headers['user-agent'],
-                req.requestId,
-            ]
-        );
+                oldValue: oldValue || undefined,
+                newValue: newValue || undefined,
+                changes: changes || undefined,
+                ipAddress: req.ip || null,
+                userAgent: req.headers['user-agent'] || null,
+                requestId: req.requestId || null,
+            },
+        });
     } catch (error) {
         logger.error('Failed to create audit log', { error, action, entityType, entityId });
     }
@@ -155,25 +151,21 @@ export class AuditLogger {
                 }
             }
 
-            await query(
-                `INSERT INTO audit_logs (
-          vendor_id, user_id, action, entity_type, entity_id,
-          old_value, new_value, changes, ip_address, user_agent, request_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-                [
+            await prisma.auditLog.create({
+                data: {
                     vendorId,
                     userId,
                     action,
                     entityType,
                     entityId,
-                    oldValue ? JSON.stringify(oldValue) : null,
-                    newValue ? JSON.stringify(newValue) : null,
-                    changes ? JSON.stringify(changes) : null,
-                    ipAddress || null,
-                    userAgent || null,
-                    requestId || null,
-                ]
-            );
+                    oldValue: oldValue || undefined,
+                    newValue: newValue || undefined,
+                    changes: changes || undefined,
+                    ipAddress: ipAddress || null,
+                    userAgent: userAgent || null,
+                    requestId: requestId || null,
+                },
+            });
         } catch (error) {
             logger.error('AuditLogger.log failed', { error, action, entityType, entityId });
         }

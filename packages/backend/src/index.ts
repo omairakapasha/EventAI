@@ -4,7 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import { config } from './config/env.js';
-import { healthCheck } from './config/database.js';
+import { healthCheck, connectDatabase, closePool } from './config/database.js';
 import { getRedisClient, closeRedis } from './config/redis.js';
 import { logger } from './utils/logger.js';
 import { requestIdMiddleware, auditMiddleware } from './middleware/audit.middleware.js';
@@ -16,6 +16,7 @@ import profileRoutes from './routes/profile.routes.js';
 import servicesRoutes from './routes/services.routes.js';
 import pricingRoutes from './routes/pricing.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import vendorRoutes from './routes/vendor.routes.js';
 
 const app = express();
 
@@ -38,8 +39,11 @@ app.use(helmet({
 }));
 
 // CORS
+const corsOrigin = config.cors.origin.includes(',')
+    ? config.cors.origin.split(',').map(s => s.trim())
+    : config.cors.origin;
 app.use(cors({
-    origin: config.cors.origin,
+    origin: corsOrigin,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
@@ -110,10 +114,11 @@ app.get('/health', async (req: Request, res: Response) => {
 });
 
 // API routes
-app.use(`${API_PREFIX}/vendors`, authRoutes);
+app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/vendors`, profileRoutes);
 app.use(`${API_PREFIX}/vendors/me/services`, servicesRoutes);
 app.use(`${API_PREFIX}/vendors/me/pricing`, pricingRoutes);
+app.use(`${API_PREFIX}/vendors/me`, vendorRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
 
 // 404 handler
@@ -125,7 +130,8 @@ app.use((req: Request, res: Response) => {
 });
 
 // Error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
     logger.error('Unhandled error', {
         error: err.message,
         stack: err.stack,
@@ -145,42 +151,55 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     });
 });
 
-// ============ SERVER ============
+const startServer = async () => {
+    // Connect to database
+    await connectDatabase();
 
-const server = app.listen(config.server.port, () => {
-    logger.info(`Server started`, {
-        port: config.server.port,
-        env: config.server.env,
-        apiVersion: config.server.apiVersion,
-    });
-});
-
-// Graceful shutdown
-const gracefulShutdown = async (signal: string) => {
-    logger.info(`${signal} received. Starting graceful shutdown...`);
-
-    server.close(async () => {
-        logger.info('HTTP server closed');
-
-        try {
-            await closeRedis();
-            logger.info('Redis connection closed');
-        } catch (error) {
-            logger.error('Error closing Redis', { error });
-        }
-
-        logger.info('Graceful shutdown complete');
-        process.exit(0);
+    const server = app.listen(config.server.port, () => {
+        logger.info(`Server started`, {
+            port: config.server.port,
+            env: config.server.env,
+            apiVersion: config.server.apiVersion,
+        });
     });
 
-    // Force close after 30s
-    setTimeout(() => {
-        logger.error('Could not close connections in time, forcefully shutting down');
-        process.exit(1);
-    }, 30000);
+    // Graceful shutdown
+    const gracefulShutdown = async (signal: string) => {
+        logger.info(`${signal} received. Starting graceful shutdown...`);
+
+        server.close(async () => {
+            logger.info('HTTP server closed');
+
+            try {
+                await closePool();
+                logger.info('Database connection closed');
+            } catch (error) {
+                logger.error('Error closing database', { error });
+            }
+
+            try {
+                await closeRedis();
+                logger.info('Redis connection closed');
+            } catch (error) {
+                logger.error('Error closing Redis', { error });
+            }
+
+            logger.info('Graceful shutdown complete');
+            process.exit(0);
+        });
+
+        // Force close after 30s
+        setTimeout(() => {
+            logger.error('Could not close connections in time, forcefully shutting down');
+            process.exit(1);
+        }, 30000);
+    };
+
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 };
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-export default app;
+startServer().catch((error) => {
+    logger.error('Failed to start server', { error });
+    process.exit(1);
+});

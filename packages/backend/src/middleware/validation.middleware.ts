@@ -13,7 +13,7 @@ export function validate(schema: ZodSchema, source: 'body' | 'query' | 'params' 
             next();
         } catch (error) {
             if (error instanceof ZodError) {
-                const formattedErrors = error.errors.map((err) => ({
+                const formattedErrors = error.issues.map((err) => ({
                     field: err.path.join('.'),
                     message: err.message,
                     code: err.code,
@@ -47,4 +47,6 @@ export function validateParams(schema: ZodSchema) {
     return validate(schema, 'params');
 }
 
-export default { validate, validateBody, validateQuery, validateParams };
+export const validateRequest = validate;
+
+export default { validate, validateBody, validateQuery, validateParams, validateRequest };

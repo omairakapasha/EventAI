@@ -51,3 +51,5 @@ debug.log
 # Temp files
 tmp/
 temp/
+__pycache__/
+venv/

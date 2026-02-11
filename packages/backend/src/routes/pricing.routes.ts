@@ -5,7 +5,7 @@ import { requirePermission } from '../middleware/rbac.middleware.js';
 import { validateBody, validateQuery } from '../middleware/validation.middleware.js';
 import { createPricingSchema, updatePricingSchema, bulkPricingSchema, pricingQuerySchema } from '../schemas/index.js';
 
-const router = Router();
+const router: Router = Router();
 
 router.use(authMiddleware);
 
@@ -16,9 +16,15 @@ router.get(
     validateQuery(pricingQuerySchema),
     async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const result = await pricingService.findAll({
+            const result = await pricingService.findByVendor({
                 vendorId: req.user!.vendorId,
-                ...req.query,
+                serviceId: req.query.serviceId as string,
+                activeOnly: req.query.activeOnly === 'true',
+                status: req.query.status as any,
+                page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
+                limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined,
+                sortBy: req.query.sortBy as string,
+                sortOrder: req.query.sortOrder as 'asc' | 'desc',
             });
 
             res.json(result);
@@ -90,7 +96,7 @@ router.post(
             );
 
             res.status(201).json({
-                message: `Successfully created ${result.created.length} prices`,
+                message: `Successfully created ${result.created} prices`,
                 created: result.created,
                 errors: result.errors,
             });
@@ -108,7 +114,7 @@ router.put(
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             const pricing = await pricingService.update(
-                req.params.id,
+                req.params.id as string,
                 req.user!.vendorId,
                 req.user!.userId,
                 req.body
@@ -145,12 +151,11 @@ router.post(
                 return;
             }
 
-            const validation = await pricingService.validatePricing(
-                req.user!.vendorId,
+            const validation = await pricingService.validatePricing({
                 serviceId,
                 price,
-                effectiveDate
-            );
+                effectiveDate,
+            } as any);
 
             res.json(validation);
         } catch (error) {

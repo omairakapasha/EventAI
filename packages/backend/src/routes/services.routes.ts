@@ -5,7 +5,7 @@ import { requirePermission } from '../middleware/rbac.middleware.js';
 import { validateBody, validateQuery } from '../middleware/validation.middleware.js';
 import { createServiceSchema, updateServiceSchema, serviceQuerySchema } from '../schemas/index.js';
 
-const router = Router();
+const router: Router = Router();
 
 // All routes require authentication
 router.use(authMiddleware);
@@ -17,9 +17,15 @@ router.get(
     validateQuery(serviceQuerySchema),
     async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const result = await serviceService.findAll({
+            const result = await serviceService.findByVendor({
                 vendorId: req.user!.vendorId,
-                ...req.query,
+                category: req.query.category as any,
+                isActive: req.query.isActive === 'true',
+                search: req.query.search as string,
+                page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
+                limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined,
+                sortBy: req.query.sortBy as string,
+                sortOrder: req.query.sortOrder as 'asc' | 'desc',
             });
 
             res.json(result);
@@ -35,7 +41,7 @@ router.get(
     requirePermission('service:read'),
     async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const service = await serviceService.findById(req.params.id, req.user!.vendorId);
+            const service = await serviceService.findById(req.params.id as string, req.user!.vendorId);
 
             if (!service) {
                 res.status(404).json({
@@ -80,7 +86,7 @@ router.put(
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             const service = await serviceService.update(
-                req.params.id,
+                req.params.id as string,
                 req.user!.vendorId,
                 req.user!.userId,
                 req.body
@@ -107,19 +113,11 @@ router.delete(
     requirePermission('service:delete'),
     async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const deleted = await serviceService.delete(
-                req.params.id,
+            await serviceService.delete(
+                req.params.id as string,
                 req.user!.vendorId,
                 req.user!.userId
             );
-
-            if (!deleted) {
-                res.status(404).json({
-                    error: 'Not Found',
-                    message: 'Service not found',
-                });
-                return;
-            }
 
             res.status(204).send();
         } catch (error) {

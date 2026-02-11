@@ -1,138 +1,77 @@
-import { query, queryOne, transaction } from '../config/database.js';
+import { prisma } from '../config/prisma.js';
 import { logger } from '../utils/logger.js';
-import { Pricing, PriceHistory, CreatePricingInput, UpdatePricingInput } from '../types/index.js';
 import { AuditLogger } from '../middleware/audit.middleware.js';
-import { PaginatedResult } from './service.service.js';
+import { PricingStatus, CurrencyCode, Prisma, type Pricing } from '../generated/client';
+import { CreatePricingInput, UpdatePricingInput } from '../schemas/index.js';
 
-// Pricing validation rules
-const PRICING_RULES = {
-    maxPriceIncreasePerDay: 0.5, // 50% max increase
-    minPrice: 1.0,
-    priceRounding: 2,
-    effectiveDateFutureLimit: 90, // Days in future
-    requireApprovalThreshold: 0.25, // 25% increase requires approval
-};
-
-export interface PricingQueryOptions {
+interface PricingQueryOptions {
     vendorId: string;
     serviceId?: string;
     activeOnly?: boolean;
-    status?: string;
+    status?: PricingStatus;
     page?: number;
     limit?: number;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
 }
 
+interface PaginatedResult<T> {
+    data: T[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 class PricingService {
-    // ============ VALIDATION ============
-
-    async validatePricing(
-        vendorId: string,
-        serviceId: string,
-        newPrice: number,
-        effectiveDate: string
-    ): Promise<{ valid: boolean; errors: string[]; requiresApproval: boolean }> {
-        const errors: string[] = [];
-        let requiresApproval = false;
-
-        // Check minimum price
-        if (newPrice < PRICING_RULES.minPrice) {
-            errors.push(`Price must be at least ${PRICING_RULES.minPrice}`);
-        }
-
-        // Check effective date is in the future
-        const effectiveDateObj = new Date(effectiveDate);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (effectiveDateObj < today) {
-            errors.push('Effective date must be in the future');
-        }
-
-        // Check effective date limit
-        const maxDate = new Date();
-        maxDate.setDate(maxDate.getDate() + PRICING_RULES.effectiveDateFutureLimit);
-
-        if (effectiveDateObj > maxDate) {
-            errors.push(`Effective date cannot be more than ${PRICING_RULES.effectiveDateFutureLimit} days in the future`);
-        }
-
-        // Check price increase percentage
-        const currentPricing = await queryOne<any>(
-            `SELECT price FROM pricing 
-       WHERE service_id = $1 AND vendor_id = $2 AND is_active = TRUE AND status = 'active'
-       ORDER BY effective_date DESC LIMIT 1`,
-            [serviceId, vendorId]
-        );
-
-        if (currentPricing) {
-            const currentPrice = parseFloat(currentPricing.price);
-            const priceChange = (newPrice - currentPrice) / currentPrice;
-
-            if (priceChange > PRICING_RULES.maxPriceIncreasePerDay) {
-                errors.push(`Price increase cannot exceed ${PRICING_RULES.maxPriceIncreasePerDay * 100}%`);
-            }
-
-            if (priceChange > PRICING_RULES.requireApprovalThreshold) {
-                requiresApproval = true;
-            }
-        }
-
-        return {
-            valid: errors.length === 0,
-            errors,
-            requiresApproval,
-        };
-    }
-
-    // ============ CRUD OPERATIONS ============
-
     async create(vendorId: string, userId: string, input: CreatePricingInput): Promise<Pricing> {
-        // Validate pricing
-        const validation = await this.validatePricing(
-            vendorId,
-            input.serviceId,
-            input.price,
-            input.effectiveDate
-        );
+        // Validate service belongs to vendor
+        const service = await prisma.service.findFirst({
+            where: { id: input.serviceId, vendorId },
+        });
 
-        if (!validation.valid) {
-            throw new Error(`Pricing validation failed: ${validation.errors.join(', ')}`);
+        if (!service) {
+            throw new Error('Service not found or does not belong to vendor');
         }
 
-        // Determine status based on approval requirement
-        const status = validation.requiresApproval ? 'pending_approval' : 'active';
+        // Check for existing active pricing for this service  
+        if (input.serviceId) {
+            const existingActive = await prisma.pricing.findFirst({
+                where: {
+                    serviceId: input.serviceId,
+                    isActive: true,
+                    status: 'active',
+                },
+            });
 
-        const result = await query<any>(
-            `INSERT INTO pricing (
-        service_id, vendor_id, price, currency, effective_date, expiry_date,
-        is_active, status, requires_approval,
-        holiday_surcharge_percent, weekend_surcharge_percent, rush_surcharge_percent,
-        min_quantity_for_discount, bulk_discount_percent, notes, created_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-      RETURNING *`,
-            [
-                input.serviceId,
+            if (existingActive) {
+                // Deactivate previous pricing
+                await prisma.pricing.update({
+                    where: { id: existingActive.id },
+                    data: { isActive: false, status: 'expired' },
+                });
+            }
+        }
+
+        const pricing = await prisma.pricing.create({
+            data: {
+                serviceId: input.serviceId,
                 vendorId,
-                input.price,
-                input.currency,
-                input.effectiveDate,
-                input.expiryDate || null,
-                true,
-                status,
-                validation.requiresApproval,
-                input.holidaySurchargePercent,
-                input.weekendSurchargePercent,
-                input.rushSurchargePercent,
-                input.minQuantityForDiscount || null,
-                input.bulkDiscountPercent,
-                input.notes || null,
-                userId,
-            ]
-        );
-
-        const pricing = this.mapPricingRow(result[0]);
+                price: input.price,
+                currency: (input.currency || 'USD') as CurrencyCode,
+                effectiveDate: new Date(input.effectiveDate),
+                expiryDate: input.expiryDate ? new Date(input.expiryDate) : null,
+                isActive: true,
+                status: 'active',
+                holidaySurchargePercent: input.holidaySurchargePercent ?? 0,
+                weekendSurchargePercent: input.weekendSurchargePercent ?? 0,
+                rushSurchargePercent: input.rushSurchargePercent ?? 0,
+                minQuantityForDiscount: input.minQuantityForDiscount,
+                bulkDiscountPercent: input.bulkDiscountPercent ?? 0,
+                notes: input.notes,
+                createdBy: userId,
+            },
+        });
 
         await AuditLogger.log(
             vendorId,
@@ -144,12 +83,10 @@ class PricingService {
             { price: input.price, serviceId: input.serviceId }
         );
 
-        logger.info('Pricing created', { pricingId: pricing.id, vendorId, requiresApproval: validation.requiresApproval });
-
         return pricing;
     }
 
-    async findAll(options: PricingQueryOptions): Promise<PaginatedResult<Pricing>> {
+    async findByVendor(options: PricingQueryOptions): Promise<PaginatedResult<Pricing>> {
         const {
             vendorId,
             serviceId,
@@ -157,54 +94,41 @@ class PricingService {
             status,
             page = 1,
             limit = 20,
-            sortBy = 'effective_date',
+            sortBy = 'createdAt',
             sortOrder = 'desc',
         } = options;
 
-        const offset = (page - 1) * limit;
-        const params: any[] = [vendorId];
-        let whereClause = 'WHERE vendor_id = $1';
-        let paramIndex = 2;
+        const where: Prisma.PricingWhereInput = { vendorId };
 
         if (serviceId) {
-            whereClause += ` AND service_id = $${paramIndex}`;
-            params.push(serviceId);
-            paramIndex++;
+            where.serviceId = serviceId;
         }
 
         if (activeOnly) {
-            whereClause += ` AND is_active = TRUE`;
+            where.isActive = true;
         }
 
         if (status) {
-            whereClause += ` AND status = $${paramIndex}`;
-            params.push(status);
-            paramIndex++;
+            where.status = status;
         }
 
-        const allowedSortColumns = ['price', 'effective_date', 'expiry_date', 'created_at'];
-        const sortColumn = allowedSortColumns.includes(sortBy) ? sortBy : 'effective_date';
-        const order = sortOrder === 'asc' ? 'ASC' : 'DESC';
-
-        const countResult = await query<{ count: string }>(
-            `SELECT COUNT(*) as count FROM pricing ${whereClause}`,
-            params
-        );
-        const total = parseInt(countResult[0].count, 10);
-
-        const dataParams = [...params, limit, offset];
-        const dataResult = await query<any>(
-            `SELECT p.*, s.name as service_name 
-       FROM pricing p
-       LEFT JOIN services s ON p.service_id = s.id
-       ${whereClause}
-       ORDER BY ${sortColumn} ${order}
-       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
-            dataParams
-        );
+        const [data, total] = await Promise.all([
+            prisma.pricing.findMany({
+                where,
+                orderBy: { [sortBy]: sortOrder },
+                skip: (page - 1) * limit,
+                take: limit,
+                include: {
+                    service: {
+                        select: { id: true, name: true, category: true },
+                    },
+                },
+            }),
+            prisma.pricing.count({ where }),
+        ]);
 
         return {
-            data: dataResult.map((row) => this.mapPricingRow(row)),
+            data: data as any,
             total,
             page,
             limit,
@@ -212,136 +136,111 @@ class PricingService {
         };
     }
 
-    async update(id: string, vendorId: string, userId: string, input: UpdatePricingInput): Promise<Pricing | null> {
-        const oldPricing = await queryOne<any>(
-            'SELECT * FROM pricing WHERE id = $1 AND vendor_id = $2',
-            [id, vendorId]
-        );
+    async findById(id: string, vendorId: string): Promise<Pricing | null> {
+        return prisma.pricing.findFirst({
+            where: { id, vendorId },
+            include: {
+                service: {
+                    select: { id: true, name: true, category: true },
+                },
+            },
+        });
+    }
 
-        if (!oldPricing) {
-            return null;
+    async update(id: string, vendorId: string, userId: string, input: UpdatePricingInput): Promise<Pricing> {
+        const existing = await prisma.pricing.findFirst({
+            where: { id, vendorId },
+        });
+
+        if (!existing) {
+            throw new Error('Pricing not found');
         }
 
-        // If price is being updated, validate and potentially record history
-        if (input.price !== undefined && input.price !== parseFloat(oldPricing.price)) {
-            // Record price history
-            await query(
-                `INSERT INTO price_history (pricing_id, service_id, vendor_id, old_price, new_price, changed_by)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-                [id, oldPricing.service_id, vendorId, oldPricing.price, input.price, userId]
-            );
+        const oldPrice = Number(existing.price);
+
+        const updateData: Prisma.PricingUpdateInput = {};
+
+        if (input.price !== undefined) updateData.price = input.price;
+        if (input.currency !== undefined) updateData.currency = input.currency as CurrencyCode;
+        if (input.effectiveDate !== undefined) updateData.effectiveDate = new Date(input.effectiveDate);
+        if (input.expiryDate !== undefined) {
+            updateData.expiryDate = input.expiryDate ? new Date(input.expiryDate) : null;
         }
+        if (input.holidaySurchargePercent !== undefined) updateData.holidaySurchargePercent = input.holidaySurchargePercent;
+        if (input.weekendSurchargePercent !== undefined) updateData.weekendSurchargePercent = input.weekendSurchargePercent;
+        if (input.rushSurchargePercent !== undefined) updateData.rushSurchargePercent = input.rushSurchargePercent;
+        if (input.minQuantityForDiscount !== undefined) updateData.minQuantityForDiscount = input.minQuantityForDiscount;
+        if (input.bulkDiscountPercent !== undefined) updateData.bulkDiscountPercent = input.bulkDiscountPercent;
+        if (input.notes !== undefined) updateData.notes = input.notes;
 
-        const updates: string[] = [];
-        const values: any[] = [];
-        let paramIndex = 1;
+        const pricing = await prisma.pricing.update({
+            where: { id },
+            data: updateData,
+        });
 
-        const fieldMappings: Record<string, string> = {
-            price: 'price',
-            currency: 'currency',
-            effectiveDate: 'effective_date',
-            expiryDate: 'expiry_date',
-            holidaySurchargePercent: 'holiday_surcharge_percent',
-            weekendSurchargePercent: 'weekend_surcharge_percent',
-            rushSurchargePercent: 'rush_surcharge_percent',
-            minQuantityForDiscount: 'min_quantity_for_discount',
-            bulkDiscountPercent: 'bulk_discount_percent',
-            notes: 'notes',
-        };
+        // Record price history if price changed
+        if (input.price !== undefined && input.price !== oldPrice) {
+            const changePercent = oldPrice > 0 ? ((input.price - oldPrice) / oldPrice) * 100 : 0;
 
-        for (const [key, column] of Object.entries(fieldMappings)) {
-            if (input[key as keyof UpdatePricingInput] !== undefined) {
-                updates.push(`${column} = $${paramIndex}`);
-                values.push(input[key as keyof UpdatePricingInput]);
-                paramIndex++;
-            }
+            await prisma.priceHistory.create({
+                data: {
+                    pricingId: id,
+                    serviceId: existing.serviceId,
+                    vendorId,
+                    oldPrice: oldPrice,
+                    newPrice: input.price,
+                    priceChangePercent: parseFloat(changePercent.toFixed(2)),
+                    changedBy: userId,
+                },
+            });
         }
-
-        if (updates.length === 0) {
-            return this.mapPricingRow(oldPricing);
-        }
-
-        values.push(id, vendorId);
-        const result = await query<any>(
-            `UPDATE pricing SET ${updates.join(', ')}, updated_at = NOW()
-       WHERE id = $${paramIndex} AND vendor_id = $${paramIndex + 1}
-       RETURNING *`,
-            values
-        );
-
-        const pricing = this.mapPricingRow(result[0]);
 
         await AuditLogger.log(
             vendorId,
             userId,
             'update',
             'pricing',
-            pricing.id,
-            { price: parseFloat(oldPricing.price) },
-            { price: pricing.price }
+            id,
+            { price: oldPrice },
+            { price: Number(pricing.price) }
         );
 
         return pricing;
     }
 
-    // ============ BULK OPERATIONS ============
-
-    async bulkCreate(
+    async getHistory(
         vendorId: string,
-        userId: string,
-        prices: CreatePricingInput[]
-    ): Promise<{ created: Pricing[]; errors: string[] }> {
-        const created: Pricing[] = [];
-        const errors: string[] = [];
-
-        for (let i = 0; i < prices.length; i++) {
-            try {
-                const pricing = await this.create(vendorId, userId, prices[i]);
-                created.push(pricing);
-            } catch (error: any) {
-                errors.push(`Row ${i + 1}: ${error.message}`);
-            }
+        options: {
+            pricingId?: string;
+            serviceId?: string;
+            page?: number;
+            limit?: number;
         }
+    ) {
+        const { pricingId, serviceId, page = 1, limit = 20 } = options;
 
-        return { created, errors };
-    }
+        const where: Prisma.PriceHistoryWhereInput = { vendorId };
 
-    // ============ HISTORY ============
-
-    async getHistory(vendorId: string, options: { serviceId?: string; page?: number; limit?: number }): Promise<PaginatedResult<PriceHistory>> {
-        const { serviceId, page = 1, limit = 50 } = options;
-        const offset = (page - 1) * limit;
-
-        let whereClause = 'WHERE ph.vendor_id = $1';
-        const params: any[] = [vendorId];
-        let paramIndex = 2;
+        if (pricingId) {
+            where.pricingId = pricingId;
+        }
 
         if (serviceId) {
-            whereClause += ` AND ph.service_id = $${paramIndex}`;
-            params.push(serviceId);
-            paramIndex++;
+            where.serviceId = serviceId;
         }
 
-        const countResult = await query<{ count: string }>(
-            `SELECT COUNT(*) as count FROM price_history ph ${whereClause}`,
-            params
-        );
-        const total = parseInt(countResult[0].count, 10);
-
-        params.push(limit, offset);
-        const dataResult = await query<any>(
-            `SELECT ph.*, s.name as service_name, vu.email as changed_by_email
-       FROM price_history ph
-       LEFT JOIN services s ON ph.service_id = s.id
-       LEFT JOIN vendor_users vu ON ph.changed_by = vu.id
-       ${whereClause}
-       ORDER BY ph.created_at DESC
-       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
-            params
-        );
+        const [data, total] = await Promise.all([
+            prisma.priceHistory.findMany({
+                where,
+                orderBy: { createdAt: 'desc' },
+                skip: (page - 1) * limit,
+                take: limit,
+            }),
+            prisma.priceHistory.count({ where }),
+        ]);
 
         return {
-            data: dataResult.map((row) => this.mapHistoryRow(row)),
+            data,
             total,
             page,
             limit,
@@ -349,49 +248,55 @@ class PricingService {
         };
     }
 
-    // ============ HELPER METHODS ============
+    async validatePricing(input: CreatePricingInput): Promise<{ valid: boolean; errors: string[] }> {
+        const errors: string[] = [];
 
-    private mapPricingRow(row: any): Pricing {
-        return {
-            id: row.id,
-            serviceId: row.service_id,
-            vendorId: row.vendor_id,
-            price: parseFloat(row.price),
-            currency: row.currency,
-            effectiveDate: row.effective_date,
-            expiryDate: row.expiry_date,
-            isActive: row.is_active,
-            status: row.status,
-            requiresApproval: row.requires_approval,
-            approvedBy: row.approved_by,
-            approvedAt: row.approved_at,
-            rejectionReason: row.rejection_reason,
-            holidaySurchargePercent: parseFloat(row.holiday_surcharge_percent) || 0,
-            weekendSurchargePercent: parseFloat(row.weekend_surcharge_percent) || 0,
-            rushSurchargePercent: parseFloat(row.rush_surcharge_percent) || 0,
-            minQuantityForDiscount: row.min_quantity_for_discount,
-            bulkDiscountPercent: parseFloat(row.bulk_discount_percent) || 0,
-            notes: row.notes,
-            metadata: row.metadata || {},
-            createdAt: row.created_at,
-            updatedAt: row.updated_at,
-            createdBy: row.created_by,
-        };
+        if (input.price <= 0) {
+            errors.push('Price must be greater than 0');
+        }
+
+        if (input.expiryDate && input.effectiveDate) {
+            if (new Date(input.expiryDate) <= new Date(input.effectiveDate)) {
+                errors.push('Expiry date must be after effective date');
+            }
+        }
+
+        if (input.bulkDiscountPercent && input.bulkDiscountPercent > 0 && !input.minQuantityForDiscount) {
+            errors.push('Min quantity for discount is required when bulk discount is set');
+        }
+
+        return { valid: errors.length === 0, errors };
     }
 
-    private mapHistoryRow(row: any): PriceHistory {
-        return {
-            id: row.id,
-            pricingId: row.pricing_id,
-            serviceId: row.service_id,
-            vendorId: row.vendor_id,
-            oldPrice: parseFloat(row.old_price),
-            newPrice: parseFloat(row.new_price),
-            priceChangePercent: parseFloat(row.price_change_percent) || 0,
-            changedBy: row.changed_by,
-            changeReason: row.change_reason,
-            createdAt: row.created_at,
-        };
+    async bulkCreate(
+        vendorId: string,
+        userId: string,
+        pricings: CreatePricingInput[]
+    ): Promise<{ created: number; errors: Array<{ index: number; error: string }> }> {
+        const results = { created: 0, errors: [] as Array<{ index: number; error: string }> };
+
+        for (let i = 0; i < pricings.length; i++) {
+            try {
+                const validation = await this.validatePricing(pricings[i]);
+                if (!validation.valid) {
+                    results.errors.push({ index: i, error: validation.errors.join(', ') });
+                    continue;
+                }
+
+                await this.create(vendorId, userId, pricings[i]);
+                results.created++;
+            } catch (error: any) {
+                results.errors.push({ index: i, error: error.message });
+            }
+        }
+
+        logger.info('Bulk pricing create completed', {
+            vendorId,
+            created: results.created,
+            errors: results.errors.length,
+        });
+
+        return results;
     }
 }
 

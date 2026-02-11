@@ -81,6 +81,8 @@ export const resetPasswordSchema = z.object({
 });
 
 export const verify2FASchema = z.object({
+    email: z.string().email(),
+    password: z.string(),
     code: z.string().length(6),
 });
 
@@ -103,7 +105,7 @@ export const updateVendorSchema = z.object({
     description: z.string().max(5000).optional(),
     website: urlSchema,
     serviceAreas: z.array(z.string()).optional(),
-    settings: z.record(z.any()).optional(),
+    settings: z.record(z.string(), z.any()).optional(),
 });
 
 // ============ SERVICE SCHEMAS ============
@@ -134,7 +136,7 @@ export const createServiceSchema = z.object({
     leadTimeDays: z.number().int().nonnegative().default(0),
     images: z.array(z.string().url()).default([]),
     featuredImage: urlSchema,
-    requirements: z.record(z.any()).optional(),
+    requirements: z.record(z.string(), z.any()).optional(),
     inclusions: z.array(z.string()).default([]),
     exclusions: z.array(z.string()).default([]),
     tags: z.array(z.string()).default([]),
@@ -223,7 +225,7 @@ export const createApiKeySchema = z.object({
     scopes: z.array(z.enum(['read', 'write', 'admin'])).min(1),
     description: z.string().max(500).optional(),
     expiresAt: dateSchema.optional(),
-    allowedIps: z.array(z.string().ip()).optional(),
+    allowedIps: z.array(z.string().regex(/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/, 'Invalid IP address')).optional(),
     rateLimitPerMinute: z.number().int().positive().default(60),
     rateLimitPerDay: z.number().int().positive().default(10000),
 });
@@ -242,7 +244,7 @@ export const createWebhookSchema = z.object({
     events: z.array(z.enum(webhookEvents)).min(1),
     maxRetries: z.number().int().min(0).max(10).default(5),
     retryDelaySeconds: z.number().int().min(10).max(3600).default(60),
-    customHeaders: z.record(z.string()).optional(),
+    customHeaders: z.record(z.string(), z.string()).optional(),
 });
 
 export const updateWebhookSchema = createWebhookSchema.partial();

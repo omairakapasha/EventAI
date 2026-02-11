@@ -1,0 +1,947 @@
+// Event-AI Platform — Prisma Schema
+// Mirrors the existing SQL migrations (001–011)
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+  output     = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// Enums
+// ============================================
+
+enum VendorTier {
+  BRONZE
+  SILVER
+  GOLD
+
+  @@map("vendor_tier")
+}
+
+enum VendorStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+
+  @@map("vendor_status")
+}
+
+enum UserRole {
+  owner
+  admin
+  staff
+  readonly
+
+  @@map("user_role")
+}
+
+enum ServiceCategory {
+  venue
+  catering
+  photography
+  videography
+  music
+  decoration
+  transportation
+  accommodation
+  planning
+  entertainment
+  equipment
+  staffing
+  other
+
+  @@map("service_category")
+}
+
+enum UnitType {
+  per_hour
+  per_day
+  per_event
+  per_person
+  per_unit
+  flat_rate
+  custom
+
+  @@map("unit_type")
+}
+
+enum CurrencyCode {
+  USD
+  EUR
+  GBP
+  PKR
+  INR
+  AED
+
+  @@map("currency_code")
+}
+
+enum PricingStatus {
+  draft
+  pending_approval
+  active
+  expired
+  rejected
+
+  @@map("pricing_status")
+}
+
+enum DocumentType {
+  business_license
+  tax_certificate
+  insurance
+  identity
+  bank_details
+  portfolio
+  contract
+  other
+
+  @@map("document_type")
+}
+
+enum DocumentStatus {
+  pending
+  verified
+  rejected
+  expired
+
+  @@map("document_status")
+}
+
+enum AuditAction {
+  create
+  update
+  delete
+  login
+  logout
+  password_change
+  settings_change
+  api_key_generate
+  document_upload
+  document_verify
+  status_change
+
+  @@map("audit_action")
+}
+
+enum EntityType {
+  vendor
+  vendor_user
+  service
+  pricing
+  document
+  booking
+  api_key
+  webhook
+
+  @@map("entity_type")
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  in_progress
+  completed
+  cancelled
+  rejected
+  no_show
+
+  @@map("booking_status")
+}
+
+enum PaymentStatus {
+  pending
+  partial
+  paid
+  refunded
+  failed
+
+  @@map("payment_status")
+}
+
+enum ApiKeyStatus {
+  active
+  revoked
+  expired
+
+  @@map("api_key_status")
+}
+
+enum ApiScope {
+  read
+  write
+  admin
+
+  @@map("api_scope")
+}
+
+enum WebhookEvent {
+  booking_created    @map("booking.created")
+  booking_confirmed  @map("booking.confirmed")
+  booking_cancelled  @map("booking.cancelled")
+  booking_completed  @map("booking.completed")
+  message_received   @map("message.received")
+  pricing_updated    @map("pricing.updated")
+  service_updated    @map("service.updated")
+
+  @@map("webhook_event")
+}
+
+enum WebhookStatus {
+  active
+  inactive
+  failing
+
+  @@map("webhook_status")
+}
+
+enum AvailabilityStatus {
+  available
+  booked
+  blocked
+  tentative
+
+  @@map("availability_status")
+}
+
+enum PriceUploadStatus {
+  pending
+  processing
+  completed
+  failed
+  partial
+
+  @@map("price_upload_status")
+}
+
+enum EventStatus {
+  draft
+  planning
+  quoted
+  approved
+  confirmed
+  completed
+  cancelled
+
+  @@map("event_status")
+}
+
+// ============================================
+// Models
+// ============================================
+
+model Vendor {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String       @db.VarChar(255)
+  businessType String?      @map("business_type") @db.VarChar(100)
+  contactEmail String       @unique @map("contact_email") @db.VarChar(255)
+  phone        String?      @db.VarChar(50)
+  address      Json         @default("{}")
+  description  String?
+  logoUrl      String?      @map("logo_url") @db.VarChar(500)
+  website      String?      @db.VarChar(500)
+  verified     Boolean      @default(false)
+  verifiedAt   DateTime?    @map("verified_at") @db.Timestamptz()
+  verifiedBy   String?      @map("verified_by") @db.Uuid
+  status       VendorStatus @default(PENDING)
+  tier         VendorTier   @default(BRONZE)
+  apiEnabled   Boolean      @default(false) @map("api_enabled")
+  apiConfig    Json         @default("{}") @map("api_config")
+  serviceAreas Json         @default("[]") @map("service_areas")
+  settings     Json         @default("{}")
+  metadata     Json         @default("{}")
+
+  // Discovery fields (migration 010)
+  keywords     String[]     @default([])
+  pricingMin   Decimal?     @map("pricing_min") @db.Decimal(15, 2)
+  pricingMax   Decimal?     @map("pricing_max") @db.Decimal(15, 2)
+  rating       Decimal?     @default(0) @db.Decimal(3, 2)
+  totalReviews Int          @default(0) @map("total_reviews")
+  category     String?      @db.VarChar(100)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  users          VendorUser[]
+  services       Service[]
+  pricings       Pricing[]
+  priceHistory   PriceHistory[]
+  documents      VendorDocument[]
+  auditLogs      AuditLog[]
+  apiKeys        ApiKey[]
+  webhooks       Webhook[]
+  bookings       Booking[]
+  eventVendors   EventVendor[]
+  availability   VendorAvailability[]
+  priceUploads   PriceUpload[]
+
+  @@map("vendors")
+}
+
+model VendorUser {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId     String   @map("vendor_id") @db.Uuid
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  firstName    String?  @map("first_name") @db.VarChar(100)
+  lastName     String?  @map("last_name") @db.VarChar(100)
+  role         UserRole @default(staff)
+  phone        String?  @db.VarChar(50)
+  avatarUrl    String?  @map("avatar_url") @db.VarChar(500)
+
+  // 2FA
+  twoFactorEnabled    Boolean  @default(false) @map("two_factor_enabled")
+  twoFactorSecret     String?  @map("two_factor_secret") @db.VarChar(255)
+  twoFactorBackupCodes String[] @map("two_factor_backup_codes")
+
+  // Account status
+  emailVerified           Boolean   @default(false) @map("email_verified")
+  emailVerifiedAt         DateTime? @map("email_verified_at") @db.Timestamptz()
+  emailVerificationToken  String?   @map("email_verification_token") @db.VarChar(255)
+  emailVerificationExpires DateTime? @map("email_verification_expires") @db.Timestamptz()
+
+  // Password reset
+  passwordResetToken   String?   @map("password_reset_token") @db.VarChar(255)
+  passwordResetExpires DateTime? @map("password_reset_expires") @db.Timestamptz()
+
+  // Security
+  lastLoginAt        DateTime? @map("last_login_at") @db.Timestamptz()
+  lastLoginIp        String?   @map("last_login_ip") @db.Inet
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockedUntil        DateTime? @map("locked_until") @db.Timestamptz()
+
+  // Preferences
+  preferences Json @default("{}") @db.JsonB
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  vendor              Vendor             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  auditLogs           AuditLog[]
+  documentsVerified   VendorDocument[]   @relation("DocumentVerifier")
+  documentsUploaded   VendorDocument[]   @relation("DocumentUploader")
+  pricingsApproved    Pricing[]          @relation("PricingApprover")
+  pricingsCreated     Pricing[]          @relation("PricingCreator")
+  priceHistoryChanges PriceHistory[]
+  bookingsConfirmed   Booking[]          @relation("BookingConfirmer")
+  bookingsCancelled   Booking[]          @relation("BookingCanceller")
+  bookingMessages     BookingMessage[]
+  apiKeysCreated      ApiKey[]           @relation("ApiKeyCreator")
+  apiKeysRevoked      ApiKey[]           @relation("ApiKeyRevoker")
+  webhooksCreated     Webhook[]
+  availabilityBlocked VendorAvailability[] @relation("AvailabilityBlocker")
+  priceUploadsUploaded PriceUpload[]
+
+  @@index([vendorId])
+  @@index([email])
+  @@index([role])
+  @@index([emailVerified])
+  @@map("vendor_users")
+}
+
+model Service {
+  id               String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId         String          @map("vendor_id") @db.Uuid
+  name             String          @db.VarChar(255)
+  category         ServiceCategory
+  description      String?
+  shortDescription String?         @map("short_description") @db.VarChar(500)
+
+  // Capacity & Quantities
+  unitType    UnitType @default(per_event) @map("unit_type")
+  minQuantity Int      @default(1) @map("min_quantity")
+  maxQuantity Int?     @map("max_quantity")
+  capacity    Int?
+
+  // Availability
+  isActive       Boolean   @default(true) @map("is_active")
+  availableFrom  DateTime? @map("available_from") @db.Timestamptz()
+  availableUntil DateTime? @map("available_until") @db.Timestamptz()
+  leadTimeDays   Int       @default(0) @map("lead_time_days")
+
+  // Media
+  images        Json    @default("[]")
+  featuredImage String? @map("featured_image") @db.VarChar(500)
+
+  // Requirements
+  requirements Json @default("{}")
+  inclusions   Json @default("[]")
+  exclusions   Json @default("[]")
+
+  // Metadata
+  tags     String[] @default([])
+  metadata Json     @default("{}")
+
+  // Stats
+  bookingCount  Int     @default(0) @map("booking_count")
+  ratingAverage Decimal @default(0) @map("rating_average") @db.Decimal(3, 2)
+  ratingCount   Int     @default(0) @map("rating_count")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  vendor       Vendor              @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  pricings     Pricing[]
+  priceHistory PriceHistory[]
+  bookings     Booking[]
+  eventVendors EventVendor[]
+  availability VendorAvailability[]
+
+  @@index([vendorId])
+  @@index([category])
+  @@index([isActive])
+  @@map("services")
+}
+
+model Pricing {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serviceId String @map("service_id") @db.Uuid
+  vendorId  String @map("vendor_id") @db.Uuid
+
+  // Pricing
+  price    Decimal      @db.Decimal(12, 2)
+  currency CurrencyCode @default(USD)
+
+  // Validity
+  effectiveDate DateTime      @map("effective_date") @db.Date
+  expiryDate    DateTime?     @map("expiry_date") @db.Date
+  isActive      Boolean       @default(true) @map("is_active")
+  status        PricingStatus @default(active)
+
+  // Approval
+  requiresApproval Boolean   @default(false) @map("requires_approval")
+  approvedBy       String?   @map("approved_by") @db.Uuid
+  approvedAt       DateTime? @map("approved_at") @db.Timestamptz()
+  rejectionReason  String?   @map("rejection_reason")
+
+  // Surcharges
+  holidaySurchargePercent Decimal @default(0) @map("holiday_surcharge_percent") @db.Decimal(5, 2)
+  weekendSurchargePercent Decimal @default(0) @map("weekend_surcharge_percent") @db.Decimal(5, 2)
+  rushSurchargePercent    Decimal @default(0) @map("rush_surcharge_percent") @db.Decimal(5, 2)
+
+  // Discounts
+  minQuantityForDiscount Int?    @map("min_quantity_for_discount")
+  bulkDiscountPercent    Decimal @default(0) @map("bulk_discount_percent") @db.Decimal(5, 2)
+
+  // Metadata
+  notes    String?
+  metadata Json    @default("{}")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  createdBy String?   @map("created_by") @db.Uuid
+
+  // Relations
+  service      Service        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  vendor       Vendor         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  approver     VendorUser?    @relation("PricingApprover", fields: [approvedBy], references: [id])
+  creator      VendorUser?    @relation("PricingCreator", fields: [createdBy], references: [id])
+  priceHistory PriceHistory[]
+
+  @@index([serviceId])
+  @@index([vendorId])
+  @@index([isActive])
+  @@index([status])
+  @@index([effectiveDate])
+  @@map("pricing")
+}
+
+model PriceHistory {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  pricingId String @map("pricing_id") @db.Uuid
+  serviceId String @map("service_id") @db.Uuid
+  vendorId  String @map("vendor_id") @db.Uuid
+
+  oldPrice           Decimal  @map("old_price") @db.Decimal(12, 2)
+  newPrice           Decimal  @map("new_price") @db.Decimal(12, 2)
+  priceChangePercent Decimal? @map("price_change_percent") @db.Decimal(5, 2)
+
+  changedBy    String? @map("changed_by") @db.Uuid
+  changeReason String? @map("change_reason")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  pricing  Pricing    @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+  service  Service    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  vendor   Vendor     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  changer  VendorUser? @relation(fields: [changedBy], references: [id])
+
+  @@index([pricingId])
+  @@index([serviceId])
+  @@index([vendorId])
+  @@map("price_history")
+}
+
+model VendorDocument {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId     String       @map("vendor_id") @db.Uuid
+  documentType DocumentType @map("document_type")
+  documentName String       @map("document_name") @db.VarChar(255)
+  documentUrl  String       @map("document_url") @db.VarChar(500)
+  fileSize     Int?         @map("file_size")
+  mimeType     String?      @map("mime_type") @db.VarChar(100)
+
+  // Verification
+  status          DocumentStatus @default(pending)
+  verifiedBy      String?        @map("verified_by") @db.Uuid
+  verifiedAt      DateTime?      @map("verified_at") @db.Timestamptz()
+  rejectionReason String?        @map("rejection_reason")
+  expiryDate      DateTime?      @map("expiry_date") @db.Date
+
+  // Metadata
+  description String?
+  metadata    Json    @default("{}")
+
+  uploadedBy String? @map("uploaded_by") @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  vendor   Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  verifier VendorUser? @relation("DocumentVerifier", fields: [verifiedBy], references: [id])
+  uploader VendorUser? @relation("DocumentUploader", fields: [uploadedBy], references: [id])
+
+  @@index([vendorId])
+  @@index([documentType])
+  @@index([status])
+  @@map("vendor_documents")
+}
+
+model AuditLog {
+  id       String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId String? @map("vendor_id") @db.Uuid
+  userId   String? @map("user_id") @db.Uuid
+
+  action     AuditAction
+  entityType EntityType  @map("entity_type")
+  entityId   String?     @map("entity_id") @db.Uuid
+
+  oldValue Json? @map("old_value")
+  newValue Json? @map("new_value")
+  changes  Json?
+
+  ipAddress String? @map("ip_address") @db.Inet
+  userAgent String? @map("user_agent")
+  requestId String? @map("request_id") @db.VarChar(100)
+
+  description String?
+  metadata    Json    @default("{}")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  vendor Vendor?     @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  user   VendorUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([vendorId])
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([createdAt(sort: Desc)])
+  @@map("audit_logs")
+}
+
+model Booking {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId  String @map("vendor_id") @db.Uuid
+  serviceId String @map("service_id") @db.Uuid
+
+  // Event details
+  eventId        String?  @map("event_id") @db.Uuid
+  eventName      String?  @map("event_name") @db.VarChar(255)
+  eventDate      DateTime @map("event_date") @db.Date
+  eventStartTime DateTime? @map("event_start_time") @db.Time()
+  eventEndTime   DateTime? @map("event_end_time") @db.Time()
+  eventLocation  Json?    @map("event_location")
+
+  // Client info
+  clientName  String? @map("client_name") @db.VarChar(255)
+  clientEmail String? @map("client_email") @db.VarChar(255)
+  clientPhone String? @map("client_phone") @db.VarChar(50)
+  guestCount  Int?    @map("guest_count")
+
+  // Booking details
+  status              BookingStatus @default(pending)
+  quantity            Int           @default(1)
+  specialRequirements String?       @map("special_requirements")
+  notes               String?
+
+  // Pricing
+  unitPrice  Decimal      @map("unit_price") @db.Decimal(12, 2)
+  totalPrice Decimal      @map("total_price") @db.Decimal(12, 2)
+  currency   CurrencyCode @default(USD)
+
+  // Payment
+  paymentStatus PaymentStatus @default(pending) @map("payment_status")
+  depositAmount Decimal?      @map("deposit_amount") @db.Decimal(12, 2)
+  depositPaidAt DateTime?     @map("deposit_paid_at") @db.Timestamptz()
+
+  // Workflow
+  confirmedAt        DateTime? @map("confirmed_at") @db.Timestamptz()
+  confirmedBy        String?   @map("confirmed_by") @db.Uuid
+  cancelledAt        DateTime? @map("cancelled_at") @db.Timestamptz()
+  cancelledBy        String?   @map("cancelled_by") @db.Uuid
+  cancellationReason String?   @map("cancellation_reason")
+
+  metadata Json @default("{}")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  vendor       Vendor             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  service      Service            @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  confirmer    VendorUser?        @relation("BookingConfirmer", fields: [confirmedBy], references: [id])
+  canceller    VendorUser?        @relation("BookingCanceller", fields: [cancelledBy], references: [id])
+  messages     BookingMessage[]
+  availability VendorAvailability[]
+
+  @@index([vendorId])
+  @@index([serviceId])
+  @@index([eventId])
+  @@index([eventDate])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt(sort: Desc)])
+  @@index([vendorId, eventDate])
+  @@map("bookings")
+}
+
+model BookingMessage {
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bookingId  String  @map("booking_id") @db.Uuid
+  senderId   String? @map("sender_id") @db.Uuid
+  senderType String  @map("sender_type") @db.VarChar(20) // 'vendor', 'client', 'system'
+
+  message     String
+  attachments Json   @default("[]")
+
+  isRead Boolean   @default(false) @map("is_read")
+  readAt DateTime? @map("read_at") @db.Timestamptz()
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  booking Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  sender  VendorUser? @relation(fields: [senderId], references: [id])
+
+  @@index([bookingId])
+  @@index([senderId])
+  @@index([createdAt(sort: Desc)])
+  @@map("booking_messages")
+}
+
+model ApiKey {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId String @map("vendor_id") @db.Uuid
+
+  name      String @db.VarChar(100)
+  keyPrefix String @map("key_prefix") @db.VarChar(8)
+  keyHash   String @map("key_hash") @db.VarChar(255)
+
+  scopes ApiScope[] @default([read])
+
+  status       ApiKeyStatus @default(active)
+  expiresAt    DateTime?    @map("expires_at") @db.Timestamptz()
+  revokedAt    DateTime?    @map("revoked_at") @db.Timestamptz()
+  revokedBy    String?      @map("revoked_by") @db.Uuid
+  revokeReason String?      @map("revoke_reason")
+
+  lastUsedAt DateTime? @map("last_used_at") @db.Timestamptz()
+  usageCount Int       @default(0) @map("usage_count")
+
+  rateLimitPerMinute Int @default(60) @map("rate_limit_per_minute")
+  rateLimitPerDay    Int @default(10000) @map("rate_limit_per_day")
+
+  description String?
+  allowedIps  String[] @map("allowed_ips")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  createdBy String?  @map("created_by") @db.Uuid
+
+  // Relations
+  vendor  Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  creator VendorUser? @relation("ApiKeyCreator", fields: [createdBy], references: [id])
+  revoker VendorUser? @relation("ApiKeyRevoker", fields: [revokedBy], references: [id])
+
+  @@index([vendorId])
+  @@index([keyPrefix])
+  @@index([status])
+  @@map("api_keys")
+}
+
+model Webhook {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId String @map("vendor_id") @db.Uuid
+
+  name   String         @db.VarChar(100)
+  url    String         @db.VarChar(500)
+  events WebhookEvent[]
+  secret String?        @db.VarChar(255)
+
+  status WebhookStatus @default(active)
+
+  maxRetries        Int @default(5) @map("max_retries")
+  retryDelaySeconds Int @default(60) @map("retry_delay_seconds")
+
+  lastTriggeredAt     DateTime? @map("last_triggered_at") @db.Timestamptz()
+  lastSuccessAt       DateTime? @map("last_success_at") @db.Timestamptz()
+  lastFailureAt       DateTime? @map("last_failure_at") @db.Timestamptz()
+  consecutiveFailures Int       @default(0) @map("consecutive_failures")
+  totalDeliveries     Int       @default(0) @map("total_deliveries")
+  failedDeliveries    Int       @default(0) @map("failed_deliveries")
+
+  customHeaders Json @default("{}") @map("custom_headers")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  createdBy String?  @map("created_by") @db.Uuid
+
+  // Relations
+  vendor     Vendor              @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  creator    VendorUser?         @relation(fields: [createdBy], references: [id])
+  deliveries WebhookDelivery[]
+
+  @@index([vendorId])
+  @@index([status])
+  @@map("webhooks")
+}
+
+model WebhookDelivery {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  webhookId String @map("webhook_id") @db.Uuid
+
+  event   WebhookEvent
+  payload Json
+
+  responseStatus Int?    @map("response_status")
+  responseBody   String? @map("response_body")
+  responseTimeMs Int?    @map("response_time_ms")
+
+  success       Boolean? @default(false)
+  attemptNumber Int      @default(1) @map("attempt_number")
+  errorMessage  String?  @map("error_message")
+
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  deliveredAt DateTime? @map("delivered_at") @db.Timestamptz()
+
+  // Relations
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([createdAt(sort: Desc)])
+  @@index([success])
+  @@map("webhook_deliveries")
+}
+
+model Event {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  eventType    String    @map("event_type") @db.VarChar(100)
+  eventName    String?   @map("event_name") @db.VarChar(255)
+  eventDate    DateTime  @map("event_date") @db.Date
+  eventTime    DateTime? @map("event_time") @db.Time()
+  eventEndDate DateTime? @map("event_end_date") @db.Date
+  eventEndTime DateTime? @map("event_end_time") @db.Time()
+
+  // Location
+  location     String? @db.VarChar(255)
+  venueDetails Json    @default("{}") @map("venue_details")
+
+  // Client Info
+  clientName  String? @map("client_name") @db.VarChar(255)
+  clientEmail String? @map("client_email") @db.VarChar(255)
+  clientPhone String? @map("client_phone") @db.VarChar(50)
+  attendees   Int?
+
+  // Budget (PKR)
+  budget      Decimal? @db.Decimal(15, 2)
+  currency    String   @default("PKR") @db.VarChar(3)
+  totalQuoted Decimal? @map("total_quoted") @db.Decimal(15, 2)
+  totalPaid   Decimal  @default(0) @map("total_paid") @db.Decimal(15, 2)
+
+  // Planning
+  status       EventStatus @default(draft)
+  preferences  Json        @default("[]")
+  requirements String?
+
+  // AI Agent Fields
+  agentSessionId String? @map("agent_session_id") @db.VarChar(255)
+  agentPlan      Json    @default("{}") @map("agent_plan")
+  agentLogs      Json    @default("[]") @map("agent_logs")
+
+  // User Approval Workflow
+  requiresApproval Boolean   @default(true) @map("requires_approval")
+  approvedAt       DateTime? @map("approved_at") @db.Timestamptz()
+  approvedBy       String?   @map("approved_by") @db.VarChar(255)
+
+  metadata Json @default("{}")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  eventVendors EventVendor[]
+
+  @@index([status])
+  @@index([eventDate])
+  @@index([eventType])
+  @@index([clientEmail])
+  @@index([agentSessionId])
+  @@index([createdAt(sort: Desc)])
+  @@map("events")
+}
+
+model EventVendor {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId  String @map("event_id") @db.Uuid
+  vendorId String @map("vendor_id") @db.Uuid
+  serviceId String? @map("service_id") @db.Uuid
+
+  selectedBy      String  @default("agent") @map("selected_by") @db.VarChar(50)
+  selectionReason String? @map("selection_reason")
+  matchScore      Decimal? @map("match_score") @db.Decimal(5, 4)
+
+  quotedPrice Decimal? @map("quoted_price") @db.Decimal(15, 2)
+  finalPrice  Decimal? @map("final_price") @db.Decimal(15, 2)
+  currency    String   @default("PKR") @db.VarChar(3)
+
+  status         String    @default("proposed") @db.VarChar(50)
+  vendorResponse String?   @map("vendor_response")
+  respondedAt    DateTime? @map("responded_at") @db.Timestamptz()
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  vendor  Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  service Service? @relation(fields: [serviceId], references: [id])
+
+  @@unique([eventId, vendorId])
+  @@index([eventId])
+  @@index([vendorId])
+  @@index([status])
+  @@map("event_vendors")
+}
+
+model VendorAvailability {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId  String  @map("vendor_id") @db.Uuid
+  serviceId String? @map("service_id") @db.Uuid
+
+  date      DateTime @db.Date
+  startTime DateTime? @map("start_time") @db.Time()
+  endTime   DateTime? @map("end_time") @db.Time()
+
+  status AvailabilityStatus @default(available)
+
+  bookingId String? @map("booking_id") @db.Uuid
+
+  notes         String?
+  blockedBy     String? @map("blocked_by") @db.Uuid
+  blockedReason String? @map("blocked_reason")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  vendor  Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  service Service?    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  booking Booking?    @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  blocker VendorUser? @relation("AvailabilityBlocker", fields: [blockedBy], references: [id], onDelete: SetNull)
+
+  @@unique([vendorId, date, serviceId], name: "vendor_date_service")
+  @@index([vendorId, date])
+  @@index([status])
+  @@map("vendor_availability")
+}
+
+model PriceUpload {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId   String @map("vendor_id") @db.Uuid
+  uploadedBy String @map("uploaded_by") @db.Uuid
+
+  fileName String  @map("file_name") @db.VarChar(255)
+  fileUrl  String? @map("file_url") @db.VarChar(500)
+  fileSize Int?    @map("file_size")
+
+  status           PriceUploadStatus @default(pending)
+  totalRecords     Int               @default(0) @map("total_records")
+  processedRecords Int               @default(0) @map("processed_records")
+  failedRecords    Int               @default(0) @map("failed_records")
+
+  errorLog Json @default("[]") @map("error_log")
+
+  startedAt   DateTime? @map("started_at") @db.Timestamptz()
+  completedAt DateTime? @map("completed_at") @db.Timestamptz()
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  vendor   Vendor              @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  uploader VendorUser          @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
+  records  PriceUploadRecord[]
+
+  @@index([vendorId])
+  @@index([status])
+  @@map("price_uploads")
+}
+
+model PriceUploadRecord {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uploadId String @map("upload_id") @db.Uuid
+
+  serviceId   String?  @map("service_id") @db.Uuid
+  serviceName String?  @map("service_name") @db.VarChar(255)
+
+  price    Decimal? @db.Decimal(12, 2)
+  currency String   @default("PKR") @db.VarChar(3)
+  unitType String?  @map("unit_type") @db.VarChar(50)
+
+  effectiveDate DateTime? @map("effective_date") @db.Date
+  expiryDate    DateTime? @map("expiry_date") @db.Date
+
+  status       String  @default("pending") @db.VarChar(20)
+  errorMessage String? @map("error_message")
+
+  rawData Json? @map("raw_data")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  appliedAt DateTime? @map("applied_at") @db.Timestamptz()
+
+  // Relations
+  upload PriceUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  @@index([uploadId])
+  @@index([status])
+  @@map("price_upload_records")
+}
+
+model QueryPerformanceLog {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  queryType    String   @map("query_type") @db.VarChar(100)
+  queryText    String?  @map("query_text")
+  executionTimeMs Int?  @map("execution_time_ms")
+  rowsAffected Int?     @map("rows_affected")
+  userId       String?  @map("user_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  @@index([queryType])
+  @@index([createdAt])
+  @@map("query_performance_log")
+}

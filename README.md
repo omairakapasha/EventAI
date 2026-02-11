@@ -1,140 +1,318 @@
-# Event-AI: Intelligent Agentic Event Management Ecosystem
+# Event-AI Platform
 
-**Event-AI** is a cutting-edge, monorepo-based platform that revolutionizes the event planning industry by integrating traditional Vendor Management with advanced **Agentic AI** capabilities. It serves as a bridge between users planning complex events (like weddings, corporate galas) and a curated network of service vendors.
+An intelligent event planning platform that connects users with vendors for seamless event management. Built with modern technologies and best practices.
 
-The platform is designed to automate the entire lifecycle of an event: from initial **Concept Discovery** (via AI chat) to **Vendor Selection**, **Booking**, and **Final Execution**.
+## 🏗️ Architecture
 
----
+The platform follows a monorepo structure with the following components:
 
-## 🛑 Critical Configuration Notice
-> [!IMPORTANT]  
-> **Before running the project, you must address the following configuration issues:**
->
-> 1.  **Database Authentication**: The default `postgres` password in `packages/backend/.env` often fails on local machines. Update `DATABASE_URL` with your actual local PostgreSQL password.
-> 2.  **User Portal Auth**: You must create a `.env` file in `packages/user` with a `NEXTAUTH_SECRET`.
->
-> 📜 **See [RECOMMENDED_FIXES.md](./RECOMMENDED_FIXES.md) for step-by-step solutions.**
-
----
-
-## 🏗️ System Architecture & Workflow
-
-The system is composed of five interconnected applications managed via a **TurboRepo** monorepo structure.
-
-### High-Level Data Flow
-```mermaid
-graph TD
-    User[End User] -->|Chat/Voice| Orchestrator[🐍 AI Orchestrator]
-    User -->|Browse/Book| UserPortal[💻 User Portal]
-    Vendor[Service Provider] -->|Manage Services| VendorPortal[🏪 Vendor Portal]
-    Admin[Platform Admin] -->|Monitor| AdminPortal[⚙️ Admin Portal]
-    
-    Orchestrator -->|Query Vendors| Backend[🚀 Backend API]
-    UserPortal -->|Auth/Bookings| Backend
-    VendorPortal -->|Profile/Services| Backend
-    AdminPortal -->|Stats/Approval| Backend
-    
-    Backend -->|Persist Data| DB[(🐘 PostgreSQL)]
-    Backend -->|Cache/Queue| Redis[(🔴 Redis)]
+```
+Event-AI/
+├── packages/
+│   ├── backend/          # Express.js API server
+│   ├── user/            # Next.js user portal
+│   ├── admin/           # Next.js admin portal
+│   ├── frontend/        # Next.js vendor portal
+│   └── ui/              # Shared UI components
+├── docker-compose.yml   # Docker orchestration
+├── package.json         # Root package configuration
+└── turbo.json          # Turborepo configuration
 ```
 
-### Component Breakdown
-| Package | Tech Stack | Port | Role & Responsibility |
-|---------|------------|------|-----------------------|
-| **Backend** | Node.js, Express, Socket.IO | `3001` | **The Brain**: Central REST API. Handles authentication, database interactions, business logic, and real-time socket events. |
-| **Orchestrator** | Python, Chainlit, Gemini | `8000` | **The Intelligence**: Uses LLMs (`google-generativeai`) to understand natural language requirements, extract intents, and generate event plans. |
-| **Admin Portal** | Next.js (App Dir) | `3002` | **The Control Center**: Dashboard for admins to approve vendors, monitor platform revenue, and manage users. |
-| **Vendor Portal** | Next.js (Pages Dir) | `3000` | **The Marketplace**: Interface for vendors (Caterers, Venues, etc.) to list services, set pricing, and view bookings. |
-| **User Portal** | Next.js (App Dir) | `3003`* | **The Storefront**: Client-facing app where users browse vendors, view AI-generated plans, and finalize bookings. |
-
----
-
-## 🌟 Key Features
-
-### 1. 🧠 Agentic Event Planning (AI)
--   **Natural Language Processing**: Users can say *"I want a beach wedding in Karachi for 500 people in December."*
--   **Intent Extraction**: The system parses date, location, budget, and guest count.
--   **Automated Vendor Matching**: The AI queries the backend to find vendors that match the criteria and budget.
--   **Plan Generation**: Produces a structured itinerary and cost estimate.
-
-### 2. 🏪 Dynamic Vendor Management
--   **Service Listings**: Vendors can create detailed profiles with images and distinct service packages.
--   **Booking Management**: Vendors receive real-time updates when they are booked (via Socket.IO).
-
-### 3. 🛡️ Administrative Oversight
--   **User & Vendor Management**: Admins can suspend/approve accounts.
--   **Analytics**: View total revenue, active events, and platform growth.
-
----
-
-## 🚧 Current Status: What Works & What's Next
-
-### ✅ Fully Implemented
--   **Monorepo Structure**: Efficient code sharing (`@event-ai/ui`) and dependency management (`pnpm`).
--   **Backend implementation**: Complete CRUD for core entities (Users, Vendors, Events).
--   **AI Logic**: Intent extraction and "Greedy" optimizer for vendor selection implemented in Python.
--   **Frontend Portals**: All three web portals (Admin, Vendor, User) are scaffolded and connected to the backend API.
-
-### ⚠️ Works in Progress / Limitations
--   **Authentication Mismatch**: The project is configured for a specific Docker environment (`postgres:postgres`), which causes connection failures on standard local setups. **(Fixable via config)**
--   **AI Integration**: The AI runs in a separate UI (Chainlit). The final vision is to embed this chat window directly inside the **User Portal**.
--   **Payment Gateway**: Not yet integrated; bookings are currently "recorded" but not processed financially.
-
----
-
-## 🚀 Getting Started Guide
+## 🚀 Quick Start
 
 ### Prerequisites
--   **Node.js** (v20+)
--   **pnpm** (Install: `npm i -g pnpm`)
--   **Python** (v3.10+)
--   **PostgreSQL** & **Redis** (Local services or Docker)
 
-### 1. Configuration Check
-Ensure all `.env` files are created and point to your local database credentials.
--   `packages/backend/.env`
--   `packages/user/.env`
--   `packages/agentic_event_orchestrator/.env`
+- Node.js >= 20.0.0
+- pnpm >= 9.0.0
+- Docker & Docker Compose (optional, for database)
 
-### 2. Installation
+### Option 1: Docker Setup (Recommended)
+
+1. **Clone and setup:**
+   ```bash
+   git clone <repository-url>
+   cd Event-AI
+   ```
+
+2. **Copy environment files:**
+   ```bash
+   cp .env.example .env
+   cp packages/backend/.env.example packages/backend/.env
+   cp packages/user/.env.example packages/user/.env
+   cp packages/admin/.env.example packages/admin/.env
+   cp packages/frontend/.env.example packages/frontend/.env
+   ```
+
+3. **Start all services:**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Run database migrations:**
+   ```bash
+   npm run db:migrate
+   ```
+
+5. **Access the applications:**
+   - User Portal: http://localhost:3000
+   - Backend API: http://localhost:3001
+   - Admin Portal: http://localhost:3002
+   - Vendor Portal: http://localhost:3003
+
+### Option 2: Local Development
+
+1. **Install dependencies:**
+   ```bash
+   pnpm install
+   ```
+
+2. **Start database services:**
+   ```bash
+   npm run db:up
+   ```
+
+3. **Run database migrations:**
+   ```bash
+   npm run db:migrate
+   ```
+
+4. **Start all services:**
+   ```bash
+   pnpm dev
+   ```
+
+   Or start individual services:
+   ```bash
+   pnpm dev:backend   # Backend only
+   pnpm dev:user      # User portal only
+   pnpm dev:admin     # Admin portal only
+   pnpm dev:vendor    # Vendor portal only
+   ```
+
+## 📦 Packages
+
+### Backend (`packages/backend`)
+
+Express.js API server with the following features:
+- RESTful API endpoints
+- JWT authentication & authorization
+- PostgreSQL database with connection pooling
+- Redis caching
+- Rate limiting
+- File upload support
+- Audit logging
+- 2FA support
+
+**Key Technologies:**
+- Express.js
+- PostgreSQL (pg)
+- Redis
+- JWT
+- bcrypt
+- Zod validation
+
+### User Portal (`packages/user`)
+
+Next.js application for event planners and attendees:
+- Event creation and management
+- Vendor marketplace
+- AI chat assistant
+- Real-time notifications (WebSocket)
+- Booking management
+
+**Key Technologies:**
+- Next.js 16
+- React 19
+- TanStack Query
+- NextAuth.js
+- Socket.io Client
+- Tailwind CSS
+
+### Admin Portal (`packages/admin`)
+
+Next.js application for system administrators:
+- User management
+- Vendor approval
+- System settings
+- Analytics dashboard
+
+**Key Technologies:**
+- Next.js 16
+- React 19
+- NextAuth.js
+- Tailwind CSS
+
+### Vendor Portal (`packages/frontend`)
+
+Next.js application for vendors:
+- Service management
+- Pricing packages
+- Booking management
+- Profile management
+
+**Key Technologies:**
+- Next.js 14
+- React 18
+- TanStack Query
+- Tailwind CSS
+
+## 🗄️ Database Schema
+
+The platform uses PostgreSQL with the following main tables:
+
+- **users** - User accounts (event planners, vendors, admins)
+- **vendors** - Vendor business profiles
+- **services** - Services offered by vendors
+- **pricing_packages** - Pricing tiers for services
+- **events** - Events created by users
+- **event_vendors** - Vendor bookings for events
+- **notifications** - User notifications
+- **audit_logs** - System audit trail
+- **api_keys** - Vendor API access keys
+
+## 🔧 Environment Variables
+
+### Root `.env`
+```env
+NODE_ENV=development
+PORT=3001
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/event_ai
+JWT_SECRET=your-secret-key
+# ... see .env.example for all options
+```
+
+### Package-specific `.env`
+Each package has its own `.env.example` file with required variables.
+
+## 🧪 Development Commands
+
 ```bash
-# From root directory
+# Install dependencies
 pnpm install
+
+# Start all services
+pnpm dev
+
+# Build all packages
+pnpm build
+
+# Run linting
+pnpm lint
+
+# Format code
+pnpm format
+
+# Database commands
+pnpm db:up          # Start database containers
+pnpm db:down        # Stop database containers
+pnpm db:migrate     # Run migrations
+pnpm db:migrate:down # Rollback migrations
+pnpm db:reset       # Reset database
+
+# Clean everything
+pnpm clean
 ```
 
-### 3. Running the Infrastructure (Development)
+## 🔐 Authentication
 
-#### 🐧 Linux / macOS
+The platform uses JWT-based authentication:
+- Access tokens expire in 15 minutes
+- Refresh tokens expire in 7 days
+- Optional 2FA support for enhanced security
+- Role-based access control (RBAC)
+
+## 🌐 API Endpoints
+
+### Authentication
+- `POST /api/v1/auth/register` - User registration
+- `POST /api/v1/auth/login` - User login
+- `POST /api/v1/auth/refresh` - Refresh access token
+- `POST /api/v1/auth/logout` - User logout
+- `POST /api/v1/auth/2fa/setup` - Setup 2FA
+- `POST /api/v1/auth/2fa/verify` - Verify 2FA
+
+### Users
+- `GET /api/v1/users/profile` - Get user profile
+- `PUT /api/v1/users/profile` - Update user profile
+- `GET /api/v1/users/notifications` - Get notifications
+
+### Vendors
+- `GET /api/v1/vendors` - List vendors
+- `GET /api/v1/vendors/:id` - Get vendor details
+- `POST /api/v1/vendors` - Create vendor profile
+- `PUT /api/v1/vendors/:id` - Update vendor profile
+
+### Services
+- `GET /api/v1/services` - List services
+- `POST /api/v1/services` - Create service
+- `PUT /api/v1/services/:id` - Update service
+- `DELETE /api/v1/services/:id` - Delete service
+
+### Events
+- `GET /api/v1/events` - List events
+- `POST /api/v1/events` - Create event
+- `GET /api/v1/events/:id` - Get event details
+- `PUT /api/v1/events/:id` - Update event
+- `DELETE /api/v1/events/:id` - Delete event
+
+### Bookings
+- `POST /api/v1/bookings` - Create booking
+- `GET /api/v1/bookings` - List bookings
+- `PUT /api/v1/bookings/:id` - Update booking status
+
+## 🧪 Testing
+
 ```bash
-# Terminal 1: Run the Web Ecosystem (Backend + 3 Portals)
-pnpm dev
-# (or use `pnpm turbo run dev` for explicit turbo execution)
+# Run backend tests
+cd packages/backend && npm test
 
-# Terminal 2: Run the AI Orchestrator
-cd packages/agentic_event_orchestrator
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-chainlit run app.py -w
+# Run frontend tests
+cd packages/user && npm test
 ```
 
-#### 🪟 Windows (Powershell)
-```powershell
-# Terminal 1: Run the Web Ecosystem
-pnpm dev
+## 📚 Documentation
 
-# Terminal 2: Run the AI Orchestrator
-cd packages\agentic_event_orchestrator
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-chainlit run app.py -w
-```
-> **Tip for Windows Users**: If `pnpm dev` hangs or fails, run services individually:
-> `pnpm dev --filter=backend`
-> `pnpm dev --filter=admin`
+- [API Documentation](docs/openapi.yaml) - OpenAPI/Swagger specification
+- [Implementation Guide](PRACTICAL_IMPLEMENTATION_GUIDE_PAKISTAN.md) - Pakistan-specific implementation
+- [Agentic Orchestrator](AGENTIC_EVENT_ORCHESTRATOR_IMPLEMENTATION_GUIDE.md) - AI orchestration details
+
+## 🛠️ Troubleshooting
+
+### Database Connection Issues
+1. Ensure PostgreSQL is running: `docker-compose ps`
+2. Check connection string in `.env`
+3. Verify database exists: `docker-compose exec postgres psql -U postgres -c "\l"`
+
+### Port Conflicts
+If ports are already in use, modify the port mappings in:
+- `docker-compose.yml`
+- Package-specific `.env` files
+
+### Migration Issues
+1. Reset database: `npm run db:reset`
+2. Check migration files: `packages/backend/src/db/migrations/`
+3. Manual rollback: `npm run db:migrate:down`
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Commit changes: `git commit -am 'Add new feature'`
+4. Push to branch: `git push origin feature/my-feature`
+5. Submit a pull request
+
+## 📄 License
+
+This project is proprietary and confidential.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the repository
+- Contact the development team
+- Check the documentation in the `docs/` folder
 
 ---
 
-## 📚 Developed By
-Ali & Team - FYP D1
+Built with ❤️ by the Event-AI Team

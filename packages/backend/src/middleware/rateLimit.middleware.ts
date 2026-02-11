@@ -1,6 +1,6 @@
 import rateLimit from 'express-rate-limit';
 import { config } from '../config/env.js';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 
 // Default rate limiter
 export const defaultLimiter = rateLimit({
@@ -17,6 +17,8 @@ export const defaultLimiter = rateLimit({
         // Use vendor ID if authenticated, otherwise IP
         return req.user?.vendorId || req.ip || 'unknown';
     },
+    // Disable IPv6 validation since we handle vendor IDs as fallback
+    validate: { keyGeneratorIpFallback: false },
 });
 
 // Strict rate limiter for auth endpoints
@@ -60,6 +62,8 @@ export const apiKeyLimiter = rateLimit({
     keyGenerator: (req: Request) => {
         return req.user?.vendorId || req.ip || 'unknown';
     },
+    // Disable IPv6 validation since we handle vendor IDs as fallback
+    validate: { keyGeneratorIpFallback: false },
 });
 
 // Upload rate limiter
@@ -76,6 +80,8 @@ export const uploadLimiter = rateLimit({
     keyGenerator: (req: Request) => {
         return req.user?.vendorId || req.ip || 'unknown';
     },
+    // Disable IPv6 validation since we handle vendor IDs as fallback
+    validate: { keyGeneratorIpFallback: false },
 });
 
 export default {

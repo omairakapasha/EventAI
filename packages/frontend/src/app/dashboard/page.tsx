@@ -25,7 +25,8 @@ const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/services', icon: Briefcase, label: 'Services' },
     { href: '/pricing', icon: DollarSign, label: 'Pricing' },
-    { href: '/bookings', icon: Calendar, label: 'Bookings' },
+    { href: '/availability', icon: Calendar, label: 'Availability' },
+    { href: '/bookings', icon: Package, label: 'Bookings' },
     { href: '/api-integration', icon: Key, label: 'API Integration' },
     { href: '/profile', icon: Settings, label: 'Profile' },
 ];

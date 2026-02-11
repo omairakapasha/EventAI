@@ -1,243 +1,150 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { query, queryOne } from '../config/database.js';
+import { Router, Request, Response } from 'express';
+import { prisma } from '../config/prisma.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { requirePermission } from '../middleware/rbac.middleware.js';
-import { validateBody } from '../middleware/validation.middleware.js';
+import { validateRequest } from '../middleware/validation.middleware.js';
 import { updateVendorSchema } from '../schemas/index.js';
-import { AuditLogger } from '../middleware/audit.middleware.js';
+import { logger } from '../utils/logger.js';
 
-const router = Router();
+const router: Router = Router();
 
-// GET /api/v1/vendors/me - Get current vendor profile
-router.get(
-    '/me',
-    authMiddleware,
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const vendor = await queryOne<any>(
-                'SELECT * FROM vendors WHERE id = $1',
-                [req.user!.vendorId]
-            );
+// Get current vendor profile
+router.get('/vendor', authMiddleware, async (req: Request, res: Response) => {
+    try {
+        const vendorId = req.user!.vendorId;
 
-            if (!vendor) {
-                res.status(404).json({
-                    error: 'Not Found',
-                    message: 'Vendor not found',
-                });
-                return;
-            }
-
-            const user = await queryOne<any>(
-                `SELECT id, email, first_name, last_name, role, phone, avatar_url, 
-                two_factor_enabled, email_verified, last_login_at, created_at
-         FROM vendor_users WHERE id = $1`,
-                [req.user!.userId]
-            );
-
-            res.json({
-                vendor: {
-                    id: vendor.id,
-                    name: vendor.name,
-                    businessType: vendor.business_type,
-                    contactEmail: vendor.contact_email,
-                    phone: vendor.phone,
-                    address: vendor.address,
-                    description: vendor.description,
-                    logoUrl: vendor.logo_url,
-                    website: vendor.website,
-                    verified: vendor.verified,
-                    status: vendor.status,
-                    tier: vendor.tier,
-                    apiEnabled: vendor.api_enabled,
-                    serviceAreas: vendor.service_areas,
-                    settings: vendor.settings,
-                    createdAt: vendor.created_at,
-                    updatedAt: vendor.updated_at,
+        const vendor = await prisma.vendor.findUnique({
+            where: { id: vendorId },
+            include: {
+                _count: {
+                    select: {
+                        services: true,
+                        users: true,
+                        bookings: true,
+                    },
                 },
-                user: user ? {
-                    id: user.id,
-                    email: user.email,
-                    firstName: user.first_name,
-                    lastName: user.last_name,
-                    role: user.role,
-                    phone: user.phone,
-                    avatarUrl: user.avatar_url,
-                    twoFactorEnabled: user.two_factor_enabled,
-                    emailVerified: user.email_verified,
-                    lastLoginAt: user.last_login_at,
-                    createdAt: user.created_at,
-                } : null,
-            });
-        } catch (error) {
-            next(error);
+            },
+        });
+
+        if (!vendor) {
+            res.status(404).json({ error: 'Vendor not found' });
+            return;
         }
+
+        res.json({ data: vendor });
+    } catch (error: any) {
+        logger.error('Get vendor profile error', { error: error.message });
+        res.status(500).json({ error: 'Failed to fetch vendor profile' });
     }
-);
+});
 
-// PUT /api/v1/vendors/me - Update vendor profile
-router.put(
-    '/me',
-    authMiddleware,
-    requirePermission('vendor:write'),
-    validateBody(updateVendorSchema),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const vendorId = req.user!.vendorId;
-            const userId = req.user!.userId;
+// Get current user profile
+router.get('/user', authMiddleware, async (req: Request, res: Response) => {
+    try {
+        const userId = req.user!.userId;
 
-            // Get old values for audit
-            const oldVendor = await queryOne<any>(
-                'SELECT name, business_type, phone, address, description, website FROM vendors WHERE id = $1',
-                [vendorId]
-            );
+        const user = await prisma.vendorUser.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                vendorId: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                phone: true,
+                avatarUrl: true,
+                twoFactorEnabled: true,
+                emailVerified: true,
+                emailVerifiedAt: true,
+                lastLoginAt: true,
+                preferences: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
 
-            const updates: string[] = [];
-            const values: any[] = [];
-            let paramIndex = 1;
-
-            const fieldMappings: Record<string, string> = {
-                name: 'name',
-                businessType: 'business_type',
-                phone: 'phone',
-                description: 'description',
-                website: 'website',
-            };
-
-            for (const [key, column] of Object.entries(fieldMappings)) {
-                if (req.body[key] !== undefined) {
-                    updates.push(`${column} = $${paramIndex}`);
-                    values.push(req.body[key]);
-                    paramIndex++;
-                }
-            }
-
-            if (req.body.address !== undefined) {
-                updates.push(`address = $${paramIndex}`);
-                values.push(JSON.stringify(req.body.address));
-                paramIndex++;
-            }
-
-            if (req.body.serviceAreas !== undefined) {
-                updates.push(`service_areas = $${paramIndex}`);
-                values.push(JSON.stringify(req.body.serviceAreas));
-                paramIndex++;
-            }
-
-            if (req.body.settings !== undefined) {
-                updates.push(`settings = $${paramIndex}`);
-                values.push(JSON.stringify(req.body.settings));
-                paramIndex++;
-            }
-
-            if (updates.length === 0) {
-                res.status(400).json({
-                    error: 'Bad Request',
-                    message: 'No fields to update',
-                });
-                return;
-            }
-
-            values.push(vendorId);
-            const result = await query<any>(
-                `UPDATE vendors SET ${updates.join(', ')}, updated_at = NOW()
-         WHERE id = $${paramIndex}
-         RETURNING *`,
-                values
-            );
-
-            const vendor = result[0];
-
-            await AuditLogger.log(
-                vendorId,
-                userId,
-                'update',
-                'vendor',
-                vendorId,
-                oldVendor,
-                req.body
-            );
-
-            res.json({
-                id: vendor.id,
-                name: vendor.name,
-                businessType: vendor.business_type,
-                contactEmail: vendor.contact_email,
-                phone: vendor.phone,
-                address: vendor.address,
-                description: vendor.description,
-                logoUrl: vendor.logo_url,
-                website: vendor.website,
-                verified: vendor.verified,
-                status: vendor.status,
-                tier: vendor.tier,
-                serviceAreas: vendor.service_areas,
-                settings: vendor.settings,
-                updatedAt: vendor.updated_at,
-            });
-        } catch (error) {
-            next(error);
+        if (!user) {
+            res.status(404).json({ error: 'User not found' });
+            return;
         }
+
+        res.json({ data: user });
+    } catch (error: any) {
+        logger.error('Get user profile error', { error: error.message });
+        res.status(500).json({ error: 'Failed to fetch user profile' });
     }
-);
+});
 
-// GET /api/v1/vendors/:id/public - Get public vendor profile
-router.get(
-    '/:id/public',
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const vendor = await queryOne<any>(
-                `SELECT id, name, business_type, description, logo_url, website, 
-                verified, service_areas, created_at
-         FROM vendors 
-         WHERE id = $1 AND status = 'ACTIVE'`,
-                [req.params.id]
-            );
+// Update vendor profile
+router.put('/vendor', authMiddleware, requirePermission('vendor:write'), validateRequest(updateVendorSchema), async (req: Request, res: Response) => {
+    try {
+        const vendorId = req.user!.vendorId;
 
-            if (!vendor) {
-                res.status(404).json({
-                    error: 'Not Found',
-                    message: 'Vendor not found',
-                });
-                return;
-            }
+        const vendor = await prisma.vendor.update({
+            where: { id: vendorId },
+            data: {
+                name: req.body.name,
+                businessType: req.body.businessType,
+                phone: req.body.phone,
+                address: req.body.address || undefined,
+                description: req.body.description,
+                website: req.body.website,
+                serviceAreas: req.body.serviceAreas || undefined,
+                settings: req.body.settings || undefined,
+            },
+        });
 
-            // Get vendor services
-            const services = await query<any>(
-                `SELECT id, name, category, short_description, featured_image, 
-                rating_average, rating_count
-         FROM services 
-         WHERE vendor_id = $1 AND is_active = TRUE
-         ORDER BY rating_average DESC
-         LIMIT 10`,
-                [req.params.id]
-            );
+        res.json({ data: vendor });
+    } catch (error: any) {
+        logger.error('Update vendor profile error', { error: error.message });
+        res.status(500).json({ error: 'Failed to update vendor profile' });
+    }
+});
 
-            res.json({
-                vendor: {
-                    id: vendor.id,
-                    name: vendor.name,
-                    businessType: vendor.business_type,
-                    description: vendor.description,
-                    logoUrl: vendor.logo_url,
-                    website: vendor.website,
-                    verified: vendor.verified,
-                    serviceAreas: vendor.service_areas,
-                    createdAt: vendor.created_at,
+// Get public vendor profile
+router.get('/public/:id', async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string;
+
+        const vendor = await prisma.vendor.findFirst({
+            where: { id, status: 'ACTIVE' },
+            select: {
+                id: true,
+                name: true,
+                businessType: true,
+                description: true,
+                logoUrl: true,
+                website: true,
+                rating: true,
+                totalReviews: true,
+                serviceAreas: true,
+                category: true,
+                services: {
+                    where: { isActive: true },
+                    select: {
+                        id: true,
+                        name: true,
+                        category: true,
+                        shortDescription: true,
+                        featuredImage: true,
+                        ratingAverage: true,
+                        ratingCount: true,
+                    },
                 },
-                services: services.map((s: any) => ({
-                    id: s.id,
-                    name: s.name,
-                    category: s.category,
-                    shortDescription: s.short_description,
-                    featuredImage: s.featured_image,
-                    ratingAverage: parseFloat(s.rating_average) || 0,
-                    ratingCount: s.rating_count,
-                })),
-            });
-        } catch (error) {
-            next(error);
+            },
+        });
+
+        if (!vendor) {
+            res.status(404).json({ error: 'Vendor not found' });
+            return;
         }
+
+        res.json({ data: vendor });
+    } catch (error: any) {
+        logger.error('Get public vendor profile error', { error: error.message });
+        res.status(500).json({ error: 'Failed to fetch vendor profile' });
     }
-);
+});
 
 export default router;
