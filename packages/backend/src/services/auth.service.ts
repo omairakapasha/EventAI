@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { config } from '../config/env.js';
 import { prisma } from '../config/prisma.js';
 import { sessionStore } from '../config/redis.js';
+import { emailService } from './email.service.js';
 import { logger } from '../utils/logger.js';
 import { UserRole, type Vendor, type VendorUser } from '../generated/client';
 import { RegisterInput, LoginInput } from '../schemas/index.js';
@@ -127,7 +128,16 @@ class AuthService {
                 },
             });
 
-            logger.info('Vendor registered', { vendorId: vendor.id, email: input.email });
+            // Send verification email
+        try {
+            await emailService.sendVerificationEmail(input.email, emailVerificationToken);
+            logger.info('Verification email sent', { email: input.email });
+        } catch (error) {
+            logger.error('Failed to send verification email', { error, email: input.email });
+            // Don't throw - registration is still successful
+        }
+
+        logger.info('Vendor registered', { vendorId: vendor.id, email: input.email });
 
             return { vendor, user };
         });
@@ -282,15 +292,15 @@ class AuthService {
 
     // ============ PASSWORD RESET ============
 
-    async forgotPassword(email: string): Promise<string> {
+    async forgotPassword(email: string): Promise<void> {
         const user = await prisma.vendorUser.findUnique({
             where: { email },
-            select: { id: true },
+            select: { id: true, email: true },
         });
 
         if (!user) {
             // Don't reveal if email exists
-            return 'If the email exists, a reset link has been sent';
+            return;
         }
 
         const resetToken = crypto.randomBytes(32).toString('hex');
@@ -304,10 +314,14 @@ class AuthService {
             },
         });
 
-        // TODO: Send email with reset link
-        logger.info('Password reset requested', { userId: user.id });
-
-        return resetToken; // In production, send via email
+        // Send password reset email
+        try {
+            await emailService.sendPasswordResetEmail(user.email, resetToken);
+            logger.info('Password reset email sent', { userId: user.id });
+        } catch (error) {
+            logger.error('Failed to send password reset email', { error, userId: user.id });
+            // Don't throw - we still generated the token
+        }
     }
 
     async resetPassword(token: string, newPassword: string): Promise<void> {
@@ -364,6 +378,22 @@ class AuthService {
                 emailVerificationExpires: null,
             },
         });
+
+        // Send welcome email
+        try {
+            const user = await prisma.vendorUser.findUnique({
+                where: { id: user.id },
+                select: { email: true, firstName: true, lastName: true },
+            });
+            if (user) {
+                await emailService.sendWelcomeEmail(
+                    user.email,
+                    `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User'
+                );
+            }
+        } catch (error) {
+            logger.error('Failed to send welcome email', { error, userId: user.id });
+        }
 
         logger.info('Email verified', { userId: user.id });
     }

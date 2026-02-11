@@ -501,6 +501,24 @@ exports.Prisma.QueryPerformanceLogScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.VendorEmbeddingScalarFieldEnum = {
+  id: 'id',
+  vendorId: 'vendorId',
+  content: 'content',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventEmbeddingScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  content: 'content',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -725,7 +743,9 @@ exports.Prisma.ModelName = {
   VendorAvailability: 'VendorAvailability',
   PriceUpload: 'PriceUpload',
   PriceUploadRecord: 'PriceUploadRecord',
-  QueryPerformanceLog: 'QueryPerformanceLog'
+  QueryPerformanceLog: 'QueryPerformanceLog',
+  VendorEmbedding: 'VendorEmbedding',
+  EventEmbedding: 'EventEmbedding'
 };
 
 /**

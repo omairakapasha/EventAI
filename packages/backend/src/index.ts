@@ -19,6 +19,8 @@ import servicesRoutes from './routes/services.routes.js';
 import pricingRoutes from './routes/pricing.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import vendorRoutes from './routes/vendor.routes.js';
+import messagesRoutes from './routes/messages.routes.js';
+import aiRoutes from './routes/ai.routes.js';
 
 const app = Fastify({
     logger: false, // We use Winston for logging
@@ -128,6 +130,12 @@ const startServer = async () => {
     await app.register(pricingRoutes, { prefix: `${API_PREFIX}/vendors/me/pricing` });
     await app.register(vendorRoutes, { prefix: `${API_PREFIX}/vendors/me` });
     await app.register(adminRoutes, { prefix: `${API_PREFIX}/admin` });
+
+    // Message routes
+    await app.register(messagesRoutes, { prefix: `${API_PREFIX}/messages` });
+
+    // AI Agent routes
+    await app.register(aiRoutes, { prefix: `${API_PREFIX}/ai` });
 
     // 404 handler
     app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) => {

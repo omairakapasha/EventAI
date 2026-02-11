@@ -1,0 +1,22 @@
+[project]
+name = "agentic-event-orchestrator"
+version = "0.1.0"
+description = "AI Agent Orchestrator for Event Management"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic",
+    "python-dotenv",
+    "requests",
+    "chainlit",
+    "ortools",
+    "google-generativeai",
+    "psycopg2-binary",
+    "mcp",
+    "fastapi",
+    "uvicorn",
+    "openai-agents"
+]
+
+[tool.uv]
+dev-dependencies = []

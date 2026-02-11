@@ -103,6 +103,16 @@ export type PriceUploadRecord = $Result.DefaultSelection<Prisma.$PriceUploadReco
  * 
  */
 export type QueryPerformanceLog = $Result.DefaultSelection<Prisma.$QueryPerformanceLogPayload>
+/**
+ * Model VendorEmbedding
+ * 
+ */
+export type VendorEmbedding = $Result.DefaultSelection<Prisma.$VendorEmbeddingPayload>
+/**
+ * Model EventEmbedding
+ * 
+ */
+export type EventEmbedding = $Result.DefaultSelection<Prisma.$EventEmbeddingPayload>
 
 /**
  * Enums
@@ -723,6 +733,26 @@ export class PrismaClient<
     * ```
     */
   get queryPerformanceLog(): Prisma.QueryPerformanceLogDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.vendorEmbedding`: Exposes CRUD operations for the **VendorEmbedding** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more VendorEmbeddings
+    * const vendorEmbeddings = await prisma.vendorEmbedding.findMany()
+    * ```
+    */
+  get vendorEmbedding(): Prisma.VendorEmbeddingDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.eventEmbedding`: Exposes CRUD operations for the **EventEmbedding** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more EventEmbeddings
+    * const eventEmbeddings = await prisma.eventEmbedding.findMany()
+    * ```
+    */
+  get eventEmbedding(): Prisma.EventEmbeddingDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1181,7 +1211,9 @@ export namespace Prisma {
     VendorAvailability: 'VendorAvailability',
     PriceUpload: 'PriceUpload',
     PriceUploadRecord: 'PriceUploadRecord',
-    QueryPerformanceLog: 'QueryPerformanceLog'
+    QueryPerformanceLog: 'QueryPerformanceLog',
+    VendorEmbedding: 'VendorEmbedding',
+    EventEmbedding: 'EventEmbedding'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1200,7 +1232,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "vendor" | "vendorUser" | "service" | "pricing" | "priceHistory" | "vendorDocument" | "auditLog" | "booking" | "bookingMessage" | "apiKey" | "webhook" | "webhookDelivery" | "event" | "eventVendor" | "vendorAvailability" | "priceUpload" | "priceUploadRecord" | "queryPerformanceLog"
+      modelProps: "vendor" | "vendorUser" | "service" | "pricing" | "priceHistory" | "vendorDocument" | "auditLog" | "booking" | "bookingMessage" | "apiKey" | "webhook" | "webhookDelivery" | "event" | "eventVendor" | "vendorAvailability" | "priceUpload" | "priceUploadRecord" | "queryPerformanceLog" | "vendorEmbedding" | "eventEmbedding"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2536,6 +2568,154 @@ export namespace Prisma {
           }
         }
       }
+      VendorEmbedding: {
+        payload: Prisma.$VendorEmbeddingPayload<ExtArgs>
+        fields: Prisma.VendorEmbeddingFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.VendorEmbeddingFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorEmbeddingPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.VendorEmbeddingFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorEmbeddingPayload>
+          }
+          findFirst: {
+            args: Prisma.VendorEmbeddingFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorEmbeddingPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.VendorEmbeddingFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorEmbeddingPayload>
+          }
+          findMany: {
+            args: Prisma.VendorEmbeddingFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorEmbeddingPayload>[]
+          }
+          create: {
+            args: Prisma.VendorEmbeddingCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorEmbeddingPayload>
+          }
+          createMany: {
+            args: Prisma.VendorEmbeddingCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.VendorEmbeddingCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorEmbeddingPayload>[]
+          }
+          delete: {
+            args: Prisma.VendorEmbeddingDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorEmbeddingPayload>
+          }
+          update: {
+            args: Prisma.VendorEmbeddingUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorEmbeddingPayload>
+          }
+          deleteMany: {
+            args: Prisma.VendorEmbeddingDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.VendorEmbeddingUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.VendorEmbeddingUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorEmbeddingPayload>[]
+          }
+          upsert: {
+            args: Prisma.VendorEmbeddingUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VendorEmbeddingPayload>
+          }
+          aggregate: {
+            args: Prisma.VendorEmbeddingAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateVendorEmbedding>
+          }
+          groupBy: {
+            args: Prisma.VendorEmbeddingGroupByArgs<ExtArgs>
+            result: $Utils.Optional<VendorEmbeddingGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.VendorEmbeddingCountArgs<ExtArgs>
+            result: $Utils.Optional<VendorEmbeddingCountAggregateOutputType> | number
+          }
+        }
+      }
+      EventEmbedding: {
+        payload: Prisma.$EventEmbeddingPayload<ExtArgs>
+        fields: Prisma.EventEmbeddingFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.EventEmbeddingFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventEmbeddingPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.EventEmbeddingFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventEmbeddingPayload>
+          }
+          findFirst: {
+            args: Prisma.EventEmbeddingFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventEmbeddingPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.EventEmbeddingFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventEmbeddingPayload>
+          }
+          findMany: {
+            args: Prisma.EventEmbeddingFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventEmbeddingPayload>[]
+          }
+          create: {
+            args: Prisma.EventEmbeddingCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventEmbeddingPayload>
+          }
+          createMany: {
+            args: Prisma.EventEmbeddingCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.EventEmbeddingCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventEmbeddingPayload>[]
+          }
+          delete: {
+            args: Prisma.EventEmbeddingDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventEmbeddingPayload>
+          }
+          update: {
+            args: Prisma.EventEmbeddingUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventEmbeddingPayload>
+          }
+          deleteMany: {
+            args: Prisma.EventEmbeddingDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.EventEmbeddingUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.EventEmbeddingUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventEmbeddingPayload>[]
+          }
+          upsert: {
+            args: Prisma.EventEmbeddingUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventEmbeddingPayload>
+          }
+          aggregate: {
+            args: Prisma.EventEmbeddingAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateEventEmbedding>
+          }
+          groupBy: {
+            args: Prisma.EventEmbeddingGroupByArgs<ExtArgs>
+            result: $Utils.Optional<EventEmbeddingGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.EventEmbeddingCountArgs<ExtArgs>
+            result: $Utils.Optional<EventEmbeddingCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2650,6 +2830,8 @@ export namespace Prisma {
     priceUpload?: PriceUploadOmit
     priceUploadRecord?: PriceUploadRecordOmit
     queryPerformanceLog?: QueryPerformanceLogOmit
+    vendorEmbedding?: VendorEmbeddingOmit
+    eventEmbedding?: EventEmbeddingOmit
   }
 
   /* Types for Logging */
@@ -3612,6 +3794,7 @@ export namespace Prisma {
     eventVendors?: boolean | Vendor$eventVendorsArgs<ExtArgs>
     availability?: boolean | Vendor$availabilityArgs<ExtArgs>
     priceUploads?: boolean | Vendor$priceUploadsArgs<ExtArgs>
+    embedding?: boolean | Vendor$embeddingArgs<ExtArgs>
     _count?: boolean | VendorCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["vendor"]>
 
@@ -3719,6 +3902,7 @@ export namespace Prisma {
     eventVendors?: boolean | Vendor$eventVendorsArgs<ExtArgs>
     availability?: boolean | Vendor$availabilityArgs<ExtArgs>
     priceUploads?: boolean | Vendor$priceUploadsArgs<ExtArgs>
+    embedding?: boolean | Vendor$embeddingArgs<ExtArgs>
     _count?: boolean | VendorCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type VendorIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3739,6 +3923,7 @@ export namespace Prisma {
       eventVendors: Prisma.$EventVendorPayload<ExtArgs>[]
       availability: Prisma.$VendorAvailabilityPayload<ExtArgs>[]
       priceUploads: Prisma.$PriceUploadPayload<ExtArgs>[]
+      embedding: Prisma.$VendorEmbeddingPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -4174,6 +4359,7 @@ export namespace Prisma {
     eventVendors<T extends Vendor$eventVendorsArgs<ExtArgs> = {}>(args?: Subset<T, Vendor$eventVendorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventVendorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     availability<T extends Vendor$availabilityArgs<ExtArgs> = {}>(args?: Subset<T, Vendor$availabilityArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorAvailabilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     priceUploads<T extends Vendor$priceUploadsArgs<ExtArgs> = {}>(args?: Subset<T, Vendor$priceUploadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PriceUploadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    embedding<T extends Vendor$embeddingArgs<ExtArgs> = {}>(args?: Subset<T, Vendor$embeddingArgs<ExtArgs>>): Prisma__VendorEmbeddingClient<$Result.GetResult<Prisma.$VendorEmbeddingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4903,6 +5089,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PriceUploadScalarFieldEnum | PriceUploadScalarFieldEnum[]
+  }
+
+  /**
+   * Vendor.embedding
+   */
+  export type Vendor$embeddingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingInclude<ExtArgs> | null
+    where?: VendorEmbeddingWhereInput
   }
 
   /**
@@ -20255,6 +20460,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     eventVendors?: boolean | Event$eventVendorsArgs<ExtArgs>
+    embedding?: boolean | Event$embeddingArgs<ExtArgs>
     _count?: boolean | EventCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["event"]>
 
@@ -20357,6 +20563,7 @@ export namespace Prisma {
   export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventType" | "eventName" | "eventDate" | "eventTime" | "eventEndDate" | "eventEndTime" | "location" | "venueDetails" | "clientName" | "clientEmail" | "clientPhone" | "attendees" | "budget" | "currency" | "totalQuoted" | "totalPaid" | "status" | "preferences" | "requirements" | "agentSessionId" | "agentPlan" | "agentLogs" | "requiresApproval" | "approvedAt" | "approvedBy" | "metadata" | "createdAt" | "updatedAt", ExtArgs["result"]["event"]>
   export type EventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     eventVendors?: boolean | Event$eventVendorsArgs<ExtArgs>
+    embedding?: boolean | Event$embeddingArgs<ExtArgs>
     _count?: boolean | EventCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type EventIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -20366,6 +20573,7 @@ export namespace Prisma {
     name: "Event"
     objects: {
       eventVendors: Prisma.$EventVendorPayload<ExtArgs>[]
+      embedding: Prisma.$EventEmbeddingPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -20792,6 +21000,7 @@ export namespace Prisma {
   export interface Prisma__EventClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     eventVendors<T extends Event$eventVendorsArgs<ExtArgs> = {}>(args?: Subset<T, Event$eventVendorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventVendorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    embedding<T extends Event$embeddingArgs<ExtArgs> = {}>(args?: Subset<T, Event$embeddingArgs<ExtArgs>>): Prisma__EventEmbeddingClient<$Result.GetResult<Prisma.$EventEmbeddingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -21259,6 +21468,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: EventVendorScalarFieldEnum | EventVendorScalarFieldEnum[]
+  }
+
+  /**
+   * Event.embedding
+   */
+  export type Event$embeddingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingInclude<ExtArgs> | null
+    where?: EventEmbeddingWhereInput
   }
 
   /**
@@ -27321,6 +27549,2140 @@ export namespace Prisma {
 
 
   /**
+   * Model VendorEmbedding
+   */
+
+  export type AggregateVendorEmbedding = {
+    _count: VendorEmbeddingCountAggregateOutputType | null
+    _min: VendorEmbeddingMinAggregateOutputType | null
+    _max: VendorEmbeddingMaxAggregateOutputType | null
+  }
+
+  export type VendorEmbeddingMinAggregateOutputType = {
+    id: string | null
+    vendorId: string | null
+    content: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type VendorEmbeddingMaxAggregateOutputType = {
+    id: string | null
+    vendorId: string | null
+    content: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type VendorEmbeddingCountAggregateOutputType = {
+    id: number
+    vendorId: number
+    content: number
+    metadata: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type VendorEmbeddingMinAggregateInputType = {
+    id?: true
+    vendorId?: true
+    content?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type VendorEmbeddingMaxAggregateInputType = {
+    id?: true
+    vendorId?: true
+    content?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type VendorEmbeddingCountAggregateInputType = {
+    id?: true
+    vendorId?: true
+    content?: true
+    metadata?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type VendorEmbeddingAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VendorEmbedding to aggregate.
+     */
+    where?: VendorEmbeddingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VendorEmbeddings to fetch.
+     */
+    orderBy?: VendorEmbeddingOrderByWithRelationInput | VendorEmbeddingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: VendorEmbeddingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VendorEmbeddings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VendorEmbeddings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned VendorEmbeddings
+    **/
+    _count?: true | VendorEmbeddingCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: VendorEmbeddingMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: VendorEmbeddingMaxAggregateInputType
+  }
+
+  export type GetVendorEmbeddingAggregateType<T extends VendorEmbeddingAggregateArgs> = {
+        [P in keyof T & keyof AggregateVendorEmbedding]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateVendorEmbedding[P]>
+      : GetScalarType<T[P], AggregateVendorEmbedding[P]>
+  }
+
+
+
+
+  export type VendorEmbeddingGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VendorEmbeddingWhereInput
+    orderBy?: VendorEmbeddingOrderByWithAggregationInput | VendorEmbeddingOrderByWithAggregationInput[]
+    by: VendorEmbeddingScalarFieldEnum[] | VendorEmbeddingScalarFieldEnum
+    having?: VendorEmbeddingScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: VendorEmbeddingCountAggregateInputType | true
+    _min?: VendorEmbeddingMinAggregateInputType
+    _max?: VendorEmbeddingMaxAggregateInputType
+  }
+
+  export type VendorEmbeddingGroupByOutputType = {
+    id: string
+    vendorId: string
+    content: string | null
+    metadata: JsonValue
+    createdAt: Date
+    updatedAt: Date
+    _count: VendorEmbeddingCountAggregateOutputType | null
+    _min: VendorEmbeddingMinAggregateOutputType | null
+    _max: VendorEmbeddingMaxAggregateOutputType | null
+  }
+
+  type GetVendorEmbeddingGroupByPayload<T extends VendorEmbeddingGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<VendorEmbeddingGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof VendorEmbeddingGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], VendorEmbeddingGroupByOutputType[P]>
+            : GetScalarType<T[P], VendorEmbeddingGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type VendorEmbeddingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    vendorId?: boolean
+    content?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    vendor?: boolean | VendorDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["vendorEmbedding"]>
+
+  export type VendorEmbeddingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    vendorId?: boolean
+    content?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    vendor?: boolean | VendorDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["vendorEmbedding"]>
+
+  export type VendorEmbeddingSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    vendorId?: boolean
+    content?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    vendor?: boolean | VendorDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["vendorEmbedding"]>
+
+  export type VendorEmbeddingSelectScalar = {
+    id?: boolean
+    vendorId?: boolean
+    content?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type VendorEmbeddingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "vendorId" | "content" | "metadata" | "createdAt" | "updatedAt", ExtArgs["result"]["vendorEmbedding"]>
+  export type VendorEmbeddingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    vendor?: boolean | VendorDefaultArgs<ExtArgs>
+  }
+  export type VendorEmbeddingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    vendor?: boolean | VendorDefaultArgs<ExtArgs>
+  }
+  export type VendorEmbeddingIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    vendor?: boolean | VendorDefaultArgs<ExtArgs>
+  }
+
+  export type $VendorEmbeddingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "VendorEmbedding"
+    objects: {
+      vendor: Prisma.$VendorPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      vendorId: string
+      content: string | null
+      metadata: Prisma.JsonValue
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["vendorEmbedding"]>
+    composites: {}
+  }
+
+  type VendorEmbeddingGetPayload<S extends boolean | null | undefined | VendorEmbeddingDefaultArgs> = $Result.GetResult<Prisma.$VendorEmbeddingPayload, S>
+
+  type VendorEmbeddingCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<VendorEmbeddingFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: VendorEmbeddingCountAggregateInputType | true
+    }
+
+  export interface VendorEmbeddingDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['VendorEmbedding'], meta: { name: 'VendorEmbedding' } }
+    /**
+     * Find zero or one VendorEmbedding that matches the filter.
+     * @param {VendorEmbeddingFindUniqueArgs} args - Arguments to find a VendorEmbedding
+     * @example
+     * // Get one VendorEmbedding
+     * const vendorEmbedding = await prisma.vendorEmbedding.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends VendorEmbeddingFindUniqueArgs>(args: SelectSubset<T, VendorEmbeddingFindUniqueArgs<ExtArgs>>): Prisma__VendorEmbeddingClient<$Result.GetResult<Prisma.$VendorEmbeddingPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one VendorEmbedding that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {VendorEmbeddingFindUniqueOrThrowArgs} args - Arguments to find a VendorEmbedding
+     * @example
+     * // Get one VendorEmbedding
+     * const vendorEmbedding = await prisma.vendorEmbedding.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends VendorEmbeddingFindUniqueOrThrowArgs>(args: SelectSubset<T, VendorEmbeddingFindUniqueOrThrowArgs<ExtArgs>>): Prisma__VendorEmbeddingClient<$Result.GetResult<Prisma.$VendorEmbeddingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first VendorEmbedding that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorEmbeddingFindFirstArgs} args - Arguments to find a VendorEmbedding
+     * @example
+     * // Get one VendorEmbedding
+     * const vendorEmbedding = await prisma.vendorEmbedding.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends VendorEmbeddingFindFirstArgs>(args?: SelectSubset<T, VendorEmbeddingFindFirstArgs<ExtArgs>>): Prisma__VendorEmbeddingClient<$Result.GetResult<Prisma.$VendorEmbeddingPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first VendorEmbedding that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorEmbeddingFindFirstOrThrowArgs} args - Arguments to find a VendorEmbedding
+     * @example
+     * // Get one VendorEmbedding
+     * const vendorEmbedding = await prisma.vendorEmbedding.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends VendorEmbeddingFindFirstOrThrowArgs>(args?: SelectSubset<T, VendorEmbeddingFindFirstOrThrowArgs<ExtArgs>>): Prisma__VendorEmbeddingClient<$Result.GetResult<Prisma.$VendorEmbeddingPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more VendorEmbeddings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorEmbeddingFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all VendorEmbeddings
+     * const vendorEmbeddings = await prisma.vendorEmbedding.findMany()
+     * 
+     * // Get first 10 VendorEmbeddings
+     * const vendorEmbeddings = await prisma.vendorEmbedding.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const vendorEmbeddingWithIdOnly = await prisma.vendorEmbedding.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends VendorEmbeddingFindManyArgs>(args?: SelectSubset<T, VendorEmbeddingFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorEmbeddingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a VendorEmbedding.
+     * @param {VendorEmbeddingCreateArgs} args - Arguments to create a VendorEmbedding.
+     * @example
+     * // Create one VendorEmbedding
+     * const VendorEmbedding = await prisma.vendorEmbedding.create({
+     *   data: {
+     *     // ... data to create a VendorEmbedding
+     *   }
+     * })
+     * 
+     */
+    create<T extends VendorEmbeddingCreateArgs>(args: SelectSubset<T, VendorEmbeddingCreateArgs<ExtArgs>>): Prisma__VendorEmbeddingClient<$Result.GetResult<Prisma.$VendorEmbeddingPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many VendorEmbeddings.
+     * @param {VendorEmbeddingCreateManyArgs} args - Arguments to create many VendorEmbeddings.
+     * @example
+     * // Create many VendorEmbeddings
+     * const vendorEmbedding = await prisma.vendorEmbedding.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends VendorEmbeddingCreateManyArgs>(args?: SelectSubset<T, VendorEmbeddingCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many VendorEmbeddings and returns the data saved in the database.
+     * @param {VendorEmbeddingCreateManyAndReturnArgs} args - Arguments to create many VendorEmbeddings.
+     * @example
+     * // Create many VendorEmbeddings
+     * const vendorEmbedding = await prisma.vendorEmbedding.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many VendorEmbeddings and only return the `id`
+     * const vendorEmbeddingWithIdOnly = await prisma.vendorEmbedding.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends VendorEmbeddingCreateManyAndReturnArgs>(args?: SelectSubset<T, VendorEmbeddingCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorEmbeddingPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a VendorEmbedding.
+     * @param {VendorEmbeddingDeleteArgs} args - Arguments to delete one VendorEmbedding.
+     * @example
+     * // Delete one VendorEmbedding
+     * const VendorEmbedding = await prisma.vendorEmbedding.delete({
+     *   where: {
+     *     // ... filter to delete one VendorEmbedding
+     *   }
+     * })
+     * 
+     */
+    delete<T extends VendorEmbeddingDeleteArgs>(args: SelectSubset<T, VendorEmbeddingDeleteArgs<ExtArgs>>): Prisma__VendorEmbeddingClient<$Result.GetResult<Prisma.$VendorEmbeddingPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one VendorEmbedding.
+     * @param {VendorEmbeddingUpdateArgs} args - Arguments to update one VendorEmbedding.
+     * @example
+     * // Update one VendorEmbedding
+     * const vendorEmbedding = await prisma.vendorEmbedding.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends VendorEmbeddingUpdateArgs>(args: SelectSubset<T, VendorEmbeddingUpdateArgs<ExtArgs>>): Prisma__VendorEmbeddingClient<$Result.GetResult<Prisma.$VendorEmbeddingPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more VendorEmbeddings.
+     * @param {VendorEmbeddingDeleteManyArgs} args - Arguments to filter VendorEmbeddings to delete.
+     * @example
+     * // Delete a few VendorEmbeddings
+     * const { count } = await prisma.vendorEmbedding.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends VendorEmbeddingDeleteManyArgs>(args?: SelectSubset<T, VendorEmbeddingDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VendorEmbeddings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorEmbeddingUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many VendorEmbeddings
+     * const vendorEmbedding = await prisma.vendorEmbedding.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends VendorEmbeddingUpdateManyArgs>(args: SelectSubset<T, VendorEmbeddingUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VendorEmbeddings and returns the data updated in the database.
+     * @param {VendorEmbeddingUpdateManyAndReturnArgs} args - Arguments to update many VendorEmbeddings.
+     * @example
+     * // Update many VendorEmbeddings
+     * const vendorEmbedding = await prisma.vendorEmbedding.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more VendorEmbeddings and only return the `id`
+     * const vendorEmbeddingWithIdOnly = await prisma.vendorEmbedding.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends VendorEmbeddingUpdateManyAndReturnArgs>(args: SelectSubset<T, VendorEmbeddingUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VendorEmbeddingPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one VendorEmbedding.
+     * @param {VendorEmbeddingUpsertArgs} args - Arguments to update or create a VendorEmbedding.
+     * @example
+     * // Update or create a VendorEmbedding
+     * const vendorEmbedding = await prisma.vendorEmbedding.upsert({
+     *   create: {
+     *     // ... data to create a VendorEmbedding
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the VendorEmbedding we want to update
+     *   }
+     * })
+     */
+    upsert<T extends VendorEmbeddingUpsertArgs>(args: SelectSubset<T, VendorEmbeddingUpsertArgs<ExtArgs>>): Prisma__VendorEmbeddingClient<$Result.GetResult<Prisma.$VendorEmbeddingPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of VendorEmbeddings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorEmbeddingCountArgs} args - Arguments to filter VendorEmbeddings to count.
+     * @example
+     * // Count the number of VendorEmbeddings
+     * const count = await prisma.vendorEmbedding.count({
+     *   where: {
+     *     // ... the filter for the VendorEmbeddings we want to count
+     *   }
+     * })
+    **/
+    count<T extends VendorEmbeddingCountArgs>(
+      args?: Subset<T, VendorEmbeddingCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], VendorEmbeddingCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a VendorEmbedding.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorEmbeddingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends VendorEmbeddingAggregateArgs>(args: Subset<T, VendorEmbeddingAggregateArgs>): Prisma.PrismaPromise<GetVendorEmbeddingAggregateType<T>>
+
+    /**
+     * Group by VendorEmbedding.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VendorEmbeddingGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends VendorEmbeddingGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: VendorEmbeddingGroupByArgs['orderBy'] }
+        : { orderBy?: VendorEmbeddingGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, VendorEmbeddingGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetVendorEmbeddingGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the VendorEmbedding model
+   */
+  readonly fields: VendorEmbeddingFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for VendorEmbedding.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__VendorEmbeddingClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    vendor<T extends VendorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, VendorDefaultArgs<ExtArgs>>): Prisma__VendorClient<$Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the VendorEmbedding model
+   */
+  interface VendorEmbeddingFieldRefs {
+    readonly id: FieldRef<"VendorEmbedding", 'String'>
+    readonly vendorId: FieldRef<"VendorEmbedding", 'String'>
+    readonly content: FieldRef<"VendorEmbedding", 'String'>
+    readonly metadata: FieldRef<"VendorEmbedding", 'Json'>
+    readonly createdAt: FieldRef<"VendorEmbedding", 'DateTime'>
+    readonly updatedAt: FieldRef<"VendorEmbedding", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * VendorEmbedding findUnique
+   */
+  export type VendorEmbeddingFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingInclude<ExtArgs> | null
+    /**
+     * Filter, which VendorEmbedding to fetch.
+     */
+    where: VendorEmbeddingWhereUniqueInput
+  }
+
+  /**
+   * VendorEmbedding findUniqueOrThrow
+   */
+  export type VendorEmbeddingFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingInclude<ExtArgs> | null
+    /**
+     * Filter, which VendorEmbedding to fetch.
+     */
+    where: VendorEmbeddingWhereUniqueInput
+  }
+
+  /**
+   * VendorEmbedding findFirst
+   */
+  export type VendorEmbeddingFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingInclude<ExtArgs> | null
+    /**
+     * Filter, which VendorEmbedding to fetch.
+     */
+    where?: VendorEmbeddingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VendorEmbeddings to fetch.
+     */
+    orderBy?: VendorEmbeddingOrderByWithRelationInput | VendorEmbeddingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VendorEmbeddings.
+     */
+    cursor?: VendorEmbeddingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VendorEmbeddings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VendorEmbeddings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VendorEmbeddings.
+     */
+    distinct?: VendorEmbeddingScalarFieldEnum | VendorEmbeddingScalarFieldEnum[]
+  }
+
+  /**
+   * VendorEmbedding findFirstOrThrow
+   */
+  export type VendorEmbeddingFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingInclude<ExtArgs> | null
+    /**
+     * Filter, which VendorEmbedding to fetch.
+     */
+    where?: VendorEmbeddingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VendorEmbeddings to fetch.
+     */
+    orderBy?: VendorEmbeddingOrderByWithRelationInput | VendorEmbeddingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VendorEmbeddings.
+     */
+    cursor?: VendorEmbeddingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VendorEmbeddings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VendorEmbeddings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VendorEmbeddings.
+     */
+    distinct?: VendorEmbeddingScalarFieldEnum | VendorEmbeddingScalarFieldEnum[]
+  }
+
+  /**
+   * VendorEmbedding findMany
+   */
+  export type VendorEmbeddingFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingInclude<ExtArgs> | null
+    /**
+     * Filter, which VendorEmbeddings to fetch.
+     */
+    where?: VendorEmbeddingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VendorEmbeddings to fetch.
+     */
+    orderBy?: VendorEmbeddingOrderByWithRelationInput | VendorEmbeddingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing VendorEmbeddings.
+     */
+    cursor?: VendorEmbeddingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VendorEmbeddings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VendorEmbeddings.
+     */
+    skip?: number
+    distinct?: VendorEmbeddingScalarFieldEnum | VendorEmbeddingScalarFieldEnum[]
+  }
+
+  /**
+   * VendorEmbedding create
+   */
+  export type VendorEmbeddingCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingInclude<ExtArgs> | null
+    /**
+     * The data needed to create a VendorEmbedding.
+     */
+    data: XOR<VendorEmbeddingCreateInput, VendorEmbeddingUncheckedCreateInput>
+  }
+
+  /**
+   * VendorEmbedding createMany
+   */
+  export type VendorEmbeddingCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many VendorEmbeddings.
+     */
+    data: VendorEmbeddingCreateManyInput | VendorEmbeddingCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * VendorEmbedding createManyAndReturn
+   */
+  export type VendorEmbeddingCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * The data used to create many VendorEmbeddings.
+     */
+    data: VendorEmbeddingCreateManyInput | VendorEmbeddingCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * VendorEmbedding update
+   */
+  export type VendorEmbeddingUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingInclude<ExtArgs> | null
+    /**
+     * The data needed to update a VendorEmbedding.
+     */
+    data: XOR<VendorEmbeddingUpdateInput, VendorEmbeddingUncheckedUpdateInput>
+    /**
+     * Choose, which VendorEmbedding to update.
+     */
+    where: VendorEmbeddingWhereUniqueInput
+  }
+
+  /**
+   * VendorEmbedding updateMany
+   */
+  export type VendorEmbeddingUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update VendorEmbeddings.
+     */
+    data: XOR<VendorEmbeddingUpdateManyMutationInput, VendorEmbeddingUncheckedUpdateManyInput>
+    /**
+     * Filter which VendorEmbeddings to update
+     */
+    where?: VendorEmbeddingWhereInput
+    /**
+     * Limit how many VendorEmbeddings to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * VendorEmbedding updateManyAndReturn
+   */
+  export type VendorEmbeddingUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * The data used to update VendorEmbeddings.
+     */
+    data: XOR<VendorEmbeddingUpdateManyMutationInput, VendorEmbeddingUncheckedUpdateManyInput>
+    /**
+     * Filter which VendorEmbeddings to update
+     */
+    where?: VendorEmbeddingWhereInput
+    /**
+     * Limit how many VendorEmbeddings to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * VendorEmbedding upsert
+   */
+  export type VendorEmbeddingUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingInclude<ExtArgs> | null
+    /**
+     * The filter to search for the VendorEmbedding to update in case it exists.
+     */
+    where: VendorEmbeddingWhereUniqueInput
+    /**
+     * In case the VendorEmbedding found by the `where` argument doesn't exist, create a new VendorEmbedding with this data.
+     */
+    create: XOR<VendorEmbeddingCreateInput, VendorEmbeddingUncheckedCreateInput>
+    /**
+     * In case the VendorEmbedding was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<VendorEmbeddingUpdateInput, VendorEmbeddingUncheckedUpdateInput>
+  }
+
+  /**
+   * VendorEmbedding delete
+   */
+  export type VendorEmbeddingDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingInclude<ExtArgs> | null
+    /**
+     * Filter which VendorEmbedding to delete.
+     */
+    where: VendorEmbeddingWhereUniqueInput
+  }
+
+  /**
+   * VendorEmbedding deleteMany
+   */
+  export type VendorEmbeddingDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VendorEmbeddings to delete
+     */
+    where?: VendorEmbeddingWhereInput
+    /**
+     * Limit how many VendorEmbeddings to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * VendorEmbedding without action
+   */
+  export type VendorEmbeddingDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VendorEmbedding
+     */
+    select?: VendorEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VendorEmbedding
+     */
+    omit?: VendorEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VendorEmbeddingInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model EventEmbedding
+   */
+
+  export type AggregateEventEmbedding = {
+    _count: EventEmbeddingCountAggregateOutputType | null
+    _min: EventEmbeddingMinAggregateOutputType | null
+    _max: EventEmbeddingMaxAggregateOutputType | null
+  }
+
+  export type EventEmbeddingMinAggregateOutputType = {
+    id: string | null
+    eventId: string | null
+    content: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type EventEmbeddingMaxAggregateOutputType = {
+    id: string | null
+    eventId: string | null
+    content: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type EventEmbeddingCountAggregateOutputType = {
+    id: number
+    eventId: number
+    content: number
+    metadata: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type EventEmbeddingMinAggregateInputType = {
+    id?: true
+    eventId?: true
+    content?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type EventEmbeddingMaxAggregateInputType = {
+    id?: true
+    eventId?: true
+    content?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type EventEmbeddingCountAggregateInputType = {
+    id?: true
+    eventId?: true
+    content?: true
+    metadata?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type EventEmbeddingAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EventEmbedding to aggregate.
+     */
+    where?: EventEmbeddingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EventEmbeddings to fetch.
+     */
+    orderBy?: EventEmbeddingOrderByWithRelationInput | EventEmbeddingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: EventEmbeddingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EventEmbeddings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EventEmbeddings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned EventEmbeddings
+    **/
+    _count?: true | EventEmbeddingCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: EventEmbeddingMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: EventEmbeddingMaxAggregateInputType
+  }
+
+  export type GetEventEmbeddingAggregateType<T extends EventEmbeddingAggregateArgs> = {
+        [P in keyof T & keyof AggregateEventEmbedding]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateEventEmbedding[P]>
+      : GetScalarType<T[P], AggregateEventEmbedding[P]>
+  }
+
+
+
+
+  export type EventEmbeddingGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EventEmbeddingWhereInput
+    orderBy?: EventEmbeddingOrderByWithAggregationInput | EventEmbeddingOrderByWithAggregationInput[]
+    by: EventEmbeddingScalarFieldEnum[] | EventEmbeddingScalarFieldEnum
+    having?: EventEmbeddingScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: EventEmbeddingCountAggregateInputType | true
+    _min?: EventEmbeddingMinAggregateInputType
+    _max?: EventEmbeddingMaxAggregateInputType
+  }
+
+  export type EventEmbeddingGroupByOutputType = {
+    id: string
+    eventId: string
+    content: string | null
+    metadata: JsonValue
+    createdAt: Date
+    updatedAt: Date
+    _count: EventEmbeddingCountAggregateOutputType | null
+    _min: EventEmbeddingMinAggregateOutputType | null
+    _max: EventEmbeddingMaxAggregateOutputType | null
+  }
+
+  type GetEventEmbeddingGroupByPayload<T extends EventEmbeddingGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<EventEmbeddingGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof EventEmbeddingGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], EventEmbeddingGroupByOutputType[P]>
+            : GetScalarType<T[P], EventEmbeddingGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type EventEmbeddingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    content?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    event?: boolean | EventDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["eventEmbedding"]>
+
+  export type EventEmbeddingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    content?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    event?: boolean | EventDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["eventEmbedding"]>
+
+  export type EventEmbeddingSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    content?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    event?: boolean | EventDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["eventEmbedding"]>
+
+  export type EventEmbeddingSelectScalar = {
+    id?: boolean
+    eventId?: boolean
+    content?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type EventEmbeddingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventId" | "content" | "metadata" | "createdAt" | "updatedAt", ExtArgs["result"]["eventEmbedding"]>
+  export type EventEmbeddingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | EventDefaultArgs<ExtArgs>
+  }
+  export type EventEmbeddingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | EventDefaultArgs<ExtArgs>
+  }
+  export type EventEmbeddingIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | EventDefaultArgs<ExtArgs>
+  }
+
+  export type $EventEmbeddingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "EventEmbedding"
+    objects: {
+      event: Prisma.$EventPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      eventId: string
+      content: string | null
+      metadata: Prisma.JsonValue
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["eventEmbedding"]>
+    composites: {}
+  }
+
+  type EventEmbeddingGetPayload<S extends boolean | null | undefined | EventEmbeddingDefaultArgs> = $Result.GetResult<Prisma.$EventEmbeddingPayload, S>
+
+  type EventEmbeddingCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<EventEmbeddingFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: EventEmbeddingCountAggregateInputType | true
+    }
+
+  export interface EventEmbeddingDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['EventEmbedding'], meta: { name: 'EventEmbedding' } }
+    /**
+     * Find zero or one EventEmbedding that matches the filter.
+     * @param {EventEmbeddingFindUniqueArgs} args - Arguments to find a EventEmbedding
+     * @example
+     * // Get one EventEmbedding
+     * const eventEmbedding = await prisma.eventEmbedding.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends EventEmbeddingFindUniqueArgs>(args: SelectSubset<T, EventEmbeddingFindUniqueArgs<ExtArgs>>): Prisma__EventEmbeddingClient<$Result.GetResult<Prisma.$EventEmbeddingPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one EventEmbedding that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {EventEmbeddingFindUniqueOrThrowArgs} args - Arguments to find a EventEmbedding
+     * @example
+     * // Get one EventEmbedding
+     * const eventEmbedding = await prisma.eventEmbedding.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends EventEmbeddingFindUniqueOrThrowArgs>(args: SelectSubset<T, EventEmbeddingFindUniqueOrThrowArgs<ExtArgs>>): Prisma__EventEmbeddingClient<$Result.GetResult<Prisma.$EventEmbeddingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first EventEmbedding that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventEmbeddingFindFirstArgs} args - Arguments to find a EventEmbedding
+     * @example
+     * // Get one EventEmbedding
+     * const eventEmbedding = await prisma.eventEmbedding.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends EventEmbeddingFindFirstArgs>(args?: SelectSubset<T, EventEmbeddingFindFirstArgs<ExtArgs>>): Prisma__EventEmbeddingClient<$Result.GetResult<Prisma.$EventEmbeddingPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first EventEmbedding that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventEmbeddingFindFirstOrThrowArgs} args - Arguments to find a EventEmbedding
+     * @example
+     * // Get one EventEmbedding
+     * const eventEmbedding = await prisma.eventEmbedding.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends EventEmbeddingFindFirstOrThrowArgs>(args?: SelectSubset<T, EventEmbeddingFindFirstOrThrowArgs<ExtArgs>>): Prisma__EventEmbeddingClient<$Result.GetResult<Prisma.$EventEmbeddingPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more EventEmbeddings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventEmbeddingFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all EventEmbeddings
+     * const eventEmbeddings = await prisma.eventEmbedding.findMany()
+     * 
+     * // Get first 10 EventEmbeddings
+     * const eventEmbeddings = await prisma.eventEmbedding.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const eventEmbeddingWithIdOnly = await prisma.eventEmbedding.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends EventEmbeddingFindManyArgs>(args?: SelectSubset<T, EventEmbeddingFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventEmbeddingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a EventEmbedding.
+     * @param {EventEmbeddingCreateArgs} args - Arguments to create a EventEmbedding.
+     * @example
+     * // Create one EventEmbedding
+     * const EventEmbedding = await prisma.eventEmbedding.create({
+     *   data: {
+     *     // ... data to create a EventEmbedding
+     *   }
+     * })
+     * 
+     */
+    create<T extends EventEmbeddingCreateArgs>(args: SelectSubset<T, EventEmbeddingCreateArgs<ExtArgs>>): Prisma__EventEmbeddingClient<$Result.GetResult<Prisma.$EventEmbeddingPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many EventEmbeddings.
+     * @param {EventEmbeddingCreateManyArgs} args - Arguments to create many EventEmbeddings.
+     * @example
+     * // Create many EventEmbeddings
+     * const eventEmbedding = await prisma.eventEmbedding.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends EventEmbeddingCreateManyArgs>(args?: SelectSubset<T, EventEmbeddingCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many EventEmbeddings and returns the data saved in the database.
+     * @param {EventEmbeddingCreateManyAndReturnArgs} args - Arguments to create many EventEmbeddings.
+     * @example
+     * // Create many EventEmbeddings
+     * const eventEmbedding = await prisma.eventEmbedding.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many EventEmbeddings and only return the `id`
+     * const eventEmbeddingWithIdOnly = await prisma.eventEmbedding.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends EventEmbeddingCreateManyAndReturnArgs>(args?: SelectSubset<T, EventEmbeddingCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventEmbeddingPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a EventEmbedding.
+     * @param {EventEmbeddingDeleteArgs} args - Arguments to delete one EventEmbedding.
+     * @example
+     * // Delete one EventEmbedding
+     * const EventEmbedding = await prisma.eventEmbedding.delete({
+     *   where: {
+     *     // ... filter to delete one EventEmbedding
+     *   }
+     * })
+     * 
+     */
+    delete<T extends EventEmbeddingDeleteArgs>(args: SelectSubset<T, EventEmbeddingDeleteArgs<ExtArgs>>): Prisma__EventEmbeddingClient<$Result.GetResult<Prisma.$EventEmbeddingPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one EventEmbedding.
+     * @param {EventEmbeddingUpdateArgs} args - Arguments to update one EventEmbedding.
+     * @example
+     * // Update one EventEmbedding
+     * const eventEmbedding = await prisma.eventEmbedding.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends EventEmbeddingUpdateArgs>(args: SelectSubset<T, EventEmbeddingUpdateArgs<ExtArgs>>): Prisma__EventEmbeddingClient<$Result.GetResult<Prisma.$EventEmbeddingPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more EventEmbeddings.
+     * @param {EventEmbeddingDeleteManyArgs} args - Arguments to filter EventEmbeddings to delete.
+     * @example
+     * // Delete a few EventEmbeddings
+     * const { count } = await prisma.eventEmbedding.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends EventEmbeddingDeleteManyArgs>(args?: SelectSubset<T, EventEmbeddingDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more EventEmbeddings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventEmbeddingUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many EventEmbeddings
+     * const eventEmbedding = await prisma.eventEmbedding.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends EventEmbeddingUpdateManyArgs>(args: SelectSubset<T, EventEmbeddingUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more EventEmbeddings and returns the data updated in the database.
+     * @param {EventEmbeddingUpdateManyAndReturnArgs} args - Arguments to update many EventEmbeddings.
+     * @example
+     * // Update many EventEmbeddings
+     * const eventEmbedding = await prisma.eventEmbedding.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more EventEmbeddings and only return the `id`
+     * const eventEmbeddingWithIdOnly = await prisma.eventEmbedding.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends EventEmbeddingUpdateManyAndReturnArgs>(args: SelectSubset<T, EventEmbeddingUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventEmbeddingPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one EventEmbedding.
+     * @param {EventEmbeddingUpsertArgs} args - Arguments to update or create a EventEmbedding.
+     * @example
+     * // Update or create a EventEmbedding
+     * const eventEmbedding = await prisma.eventEmbedding.upsert({
+     *   create: {
+     *     // ... data to create a EventEmbedding
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the EventEmbedding we want to update
+     *   }
+     * })
+     */
+    upsert<T extends EventEmbeddingUpsertArgs>(args: SelectSubset<T, EventEmbeddingUpsertArgs<ExtArgs>>): Prisma__EventEmbeddingClient<$Result.GetResult<Prisma.$EventEmbeddingPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of EventEmbeddings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventEmbeddingCountArgs} args - Arguments to filter EventEmbeddings to count.
+     * @example
+     * // Count the number of EventEmbeddings
+     * const count = await prisma.eventEmbedding.count({
+     *   where: {
+     *     // ... the filter for the EventEmbeddings we want to count
+     *   }
+     * })
+    **/
+    count<T extends EventEmbeddingCountArgs>(
+      args?: Subset<T, EventEmbeddingCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], EventEmbeddingCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a EventEmbedding.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventEmbeddingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends EventEmbeddingAggregateArgs>(args: Subset<T, EventEmbeddingAggregateArgs>): Prisma.PrismaPromise<GetEventEmbeddingAggregateType<T>>
+
+    /**
+     * Group by EventEmbedding.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventEmbeddingGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends EventEmbeddingGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: EventEmbeddingGroupByArgs['orderBy'] }
+        : { orderBy?: EventEmbeddingGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, EventEmbeddingGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetEventEmbeddingGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the EventEmbedding model
+   */
+  readonly fields: EventEmbeddingFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for EventEmbedding.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__EventEmbeddingClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    event<T extends EventDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDefaultArgs<ExtArgs>>): Prisma__EventClient<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the EventEmbedding model
+   */
+  interface EventEmbeddingFieldRefs {
+    readonly id: FieldRef<"EventEmbedding", 'String'>
+    readonly eventId: FieldRef<"EventEmbedding", 'String'>
+    readonly content: FieldRef<"EventEmbedding", 'String'>
+    readonly metadata: FieldRef<"EventEmbedding", 'Json'>
+    readonly createdAt: FieldRef<"EventEmbedding", 'DateTime'>
+    readonly updatedAt: FieldRef<"EventEmbedding", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * EventEmbedding findUnique
+   */
+  export type EventEmbeddingFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingInclude<ExtArgs> | null
+    /**
+     * Filter, which EventEmbedding to fetch.
+     */
+    where: EventEmbeddingWhereUniqueInput
+  }
+
+  /**
+   * EventEmbedding findUniqueOrThrow
+   */
+  export type EventEmbeddingFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingInclude<ExtArgs> | null
+    /**
+     * Filter, which EventEmbedding to fetch.
+     */
+    where: EventEmbeddingWhereUniqueInput
+  }
+
+  /**
+   * EventEmbedding findFirst
+   */
+  export type EventEmbeddingFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingInclude<ExtArgs> | null
+    /**
+     * Filter, which EventEmbedding to fetch.
+     */
+    where?: EventEmbeddingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EventEmbeddings to fetch.
+     */
+    orderBy?: EventEmbeddingOrderByWithRelationInput | EventEmbeddingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EventEmbeddings.
+     */
+    cursor?: EventEmbeddingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EventEmbeddings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EventEmbeddings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EventEmbeddings.
+     */
+    distinct?: EventEmbeddingScalarFieldEnum | EventEmbeddingScalarFieldEnum[]
+  }
+
+  /**
+   * EventEmbedding findFirstOrThrow
+   */
+  export type EventEmbeddingFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingInclude<ExtArgs> | null
+    /**
+     * Filter, which EventEmbedding to fetch.
+     */
+    where?: EventEmbeddingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EventEmbeddings to fetch.
+     */
+    orderBy?: EventEmbeddingOrderByWithRelationInput | EventEmbeddingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EventEmbeddings.
+     */
+    cursor?: EventEmbeddingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EventEmbeddings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EventEmbeddings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EventEmbeddings.
+     */
+    distinct?: EventEmbeddingScalarFieldEnum | EventEmbeddingScalarFieldEnum[]
+  }
+
+  /**
+   * EventEmbedding findMany
+   */
+  export type EventEmbeddingFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingInclude<ExtArgs> | null
+    /**
+     * Filter, which EventEmbeddings to fetch.
+     */
+    where?: EventEmbeddingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EventEmbeddings to fetch.
+     */
+    orderBy?: EventEmbeddingOrderByWithRelationInput | EventEmbeddingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing EventEmbeddings.
+     */
+    cursor?: EventEmbeddingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EventEmbeddings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EventEmbeddings.
+     */
+    skip?: number
+    distinct?: EventEmbeddingScalarFieldEnum | EventEmbeddingScalarFieldEnum[]
+  }
+
+  /**
+   * EventEmbedding create
+   */
+  export type EventEmbeddingCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingInclude<ExtArgs> | null
+    /**
+     * The data needed to create a EventEmbedding.
+     */
+    data: XOR<EventEmbeddingCreateInput, EventEmbeddingUncheckedCreateInput>
+  }
+
+  /**
+   * EventEmbedding createMany
+   */
+  export type EventEmbeddingCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many EventEmbeddings.
+     */
+    data: EventEmbeddingCreateManyInput | EventEmbeddingCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * EventEmbedding createManyAndReturn
+   */
+  export type EventEmbeddingCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * The data used to create many EventEmbeddings.
+     */
+    data: EventEmbeddingCreateManyInput | EventEmbeddingCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * EventEmbedding update
+   */
+  export type EventEmbeddingUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingInclude<ExtArgs> | null
+    /**
+     * The data needed to update a EventEmbedding.
+     */
+    data: XOR<EventEmbeddingUpdateInput, EventEmbeddingUncheckedUpdateInput>
+    /**
+     * Choose, which EventEmbedding to update.
+     */
+    where: EventEmbeddingWhereUniqueInput
+  }
+
+  /**
+   * EventEmbedding updateMany
+   */
+  export type EventEmbeddingUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update EventEmbeddings.
+     */
+    data: XOR<EventEmbeddingUpdateManyMutationInput, EventEmbeddingUncheckedUpdateManyInput>
+    /**
+     * Filter which EventEmbeddings to update
+     */
+    where?: EventEmbeddingWhereInput
+    /**
+     * Limit how many EventEmbeddings to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * EventEmbedding updateManyAndReturn
+   */
+  export type EventEmbeddingUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * The data used to update EventEmbeddings.
+     */
+    data: XOR<EventEmbeddingUpdateManyMutationInput, EventEmbeddingUncheckedUpdateManyInput>
+    /**
+     * Filter which EventEmbeddings to update
+     */
+    where?: EventEmbeddingWhereInput
+    /**
+     * Limit how many EventEmbeddings to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * EventEmbedding upsert
+   */
+  export type EventEmbeddingUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingInclude<ExtArgs> | null
+    /**
+     * The filter to search for the EventEmbedding to update in case it exists.
+     */
+    where: EventEmbeddingWhereUniqueInput
+    /**
+     * In case the EventEmbedding found by the `where` argument doesn't exist, create a new EventEmbedding with this data.
+     */
+    create: XOR<EventEmbeddingCreateInput, EventEmbeddingUncheckedCreateInput>
+    /**
+     * In case the EventEmbedding was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<EventEmbeddingUpdateInput, EventEmbeddingUncheckedUpdateInput>
+  }
+
+  /**
+   * EventEmbedding delete
+   */
+  export type EventEmbeddingDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingInclude<ExtArgs> | null
+    /**
+     * Filter which EventEmbedding to delete.
+     */
+    where: EventEmbeddingWhereUniqueInput
+  }
+
+  /**
+   * EventEmbedding deleteMany
+   */
+  export type EventEmbeddingDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EventEmbeddings to delete
+     */
+    where?: EventEmbeddingWhereInput
+    /**
+     * Limit how many EventEmbeddings to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * EventEmbedding without action
+   */
+  export type EventEmbeddingDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventEmbedding
+     */
+    select?: EventEmbeddingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventEmbedding
+     */
+    omit?: EventEmbeddingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventEmbeddingInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -27766,6 +30128,30 @@ export namespace Prisma {
   };
 
   export type QueryPerformanceLogScalarFieldEnum = (typeof QueryPerformanceLogScalarFieldEnum)[keyof typeof QueryPerformanceLogScalarFieldEnum]
+
+
+  export const VendorEmbeddingScalarFieldEnum: {
+    id: 'id',
+    vendorId: 'vendorId',
+    content: 'content',
+    metadata: 'metadata',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type VendorEmbeddingScalarFieldEnum = (typeof VendorEmbeddingScalarFieldEnum)[keyof typeof VendorEmbeddingScalarFieldEnum]
+
+
+  export const EventEmbeddingScalarFieldEnum: {
+    id: 'id',
+    eventId: 'eventId',
+    content: 'content',
+    metadata: 'metadata',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type EventEmbeddingScalarFieldEnum = (typeof EventEmbeddingScalarFieldEnum)[keyof typeof EventEmbeddingScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -28238,6 +30624,7 @@ export namespace Prisma {
     eventVendors?: EventVendorListRelationFilter
     availability?: VendorAvailabilityListRelationFilter
     priceUploads?: PriceUploadListRelationFilter
+    embedding?: XOR<VendorEmbeddingNullableScalarRelationFilter, VendorEmbeddingWhereInput> | null
   }
 
   export type VendorOrderByWithRelationInput = {
@@ -28280,6 +30667,7 @@ export namespace Prisma {
     eventVendors?: EventVendorOrderByRelationAggregateInput
     availability?: VendorAvailabilityOrderByRelationAggregateInput
     priceUploads?: PriceUploadOrderByRelationAggregateInput
+    embedding?: VendorEmbeddingOrderByWithRelationInput
   }
 
   export type VendorWhereUniqueInput = Prisma.AtLeast<{
@@ -28325,6 +30713,7 @@ export namespace Prisma {
     eventVendors?: EventVendorListRelationFilter
     availability?: VendorAvailabilityListRelationFilter
     priceUploads?: PriceUploadListRelationFilter
+    embedding?: XOR<VendorEmbeddingNullableScalarRelationFilter, VendorEmbeddingWhereInput> | null
   }, "id" | "contactEmail">
 
   export type VendorOrderByWithAggregationInput = {
@@ -29924,6 +32313,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     eventVendors?: EventVendorListRelationFilter
+    embedding?: XOR<EventEmbeddingNullableScalarRelationFilter, EventEmbeddingWhereInput> | null
   }
 
   export type EventOrderByWithRelationInput = {
@@ -29957,6 +32347,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     eventVendors?: EventVendorOrderByRelationAggregateInput
+    embedding?: EventEmbeddingOrderByWithRelationInput
   }
 
   export type EventWhereUniqueInput = Prisma.AtLeast<{
@@ -29993,6 +32384,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     eventVendors?: EventVendorListRelationFilter
+    embedding?: XOR<EventEmbeddingNullableScalarRelationFilter, EventEmbeddingWhereInput> | null
   }, "id">
 
   export type EventOrderByWithAggregationInput = {
@@ -30565,6 +32957,126 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"QueryPerformanceLog"> | Date | string
   }
 
+  export type VendorEmbeddingWhereInput = {
+    AND?: VendorEmbeddingWhereInput | VendorEmbeddingWhereInput[]
+    OR?: VendorEmbeddingWhereInput[]
+    NOT?: VendorEmbeddingWhereInput | VendorEmbeddingWhereInput[]
+    id?: UuidFilter<"VendorEmbedding"> | string
+    vendorId?: UuidFilter<"VendorEmbedding"> | string
+    content?: StringNullableFilter<"VendorEmbedding"> | string | null
+    metadata?: JsonFilter<"VendorEmbedding">
+    createdAt?: DateTimeFilter<"VendorEmbedding"> | Date | string
+    updatedAt?: DateTimeFilter<"VendorEmbedding"> | Date | string
+    vendor?: XOR<VendorScalarRelationFilter, VendorWhereInput>
+  }
+
+  export type VendorEmbeddingOrderByWithRelationInput = {
+    id?: SortOrder
+    vendorId?: SortOrder
+    content?: SortOrderInput | SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    vendor?: VendorOrderByWithRelationInput
+  }
+
+  export type VendorEmbeddingWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    vendorId?: string
+    AND?: VendorEmbeddingWhereInput | VendorEmbeddingWhereInput[]
+    OR?: VendorEmbeddingWhereInput[]
+    NOT?: VendorEmbeddingWhereInput | VendorEmbeddingWhereInput[]
+    content?: StringNullableFilter<"VendorEmbedding"> | string | null
+    metadata?: JsonFilter<"VendorEmbedding">
+    createdAt?: DateTimeFilter<"VendorEmbedding"> | Date | string
+    updatedAt?: DateTimeFilter<"VendorEmbedding"> | Date | string
+    vendor?: XOR<VendorScalarRelationFilter, VendorWhereInput>
+  }, "id" | "vendorId">
+
+  export type VendorEmbeddingOrderByWithAggregationInput = {
+    id?: SortOrder
+    vendorId?: SortOrder
+    content?: SortOrderInput | SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: VendorEmbeddingCountOrderByAggregateInput
+    _max?: VendorEmbeddingMaxOrderByAggregateInput
+    _min?: VendorEmbeddingMinOrderByAggregateInput
+  }
+
+  export type VendorEmbeddingScalarWhereWithAggregatesInput = {
+    AND?: VendorEmbeddingScalarWhereWithAggregatesInput | VendorEmbeddingScalarWhereWithAggregatesInput[]
+    OR?: VendorEmbeddingScalarWhereWithAggregatesInput[]
+    NOT?: VendorEmbeddingScalarWhereWithAggregatesInput | VendorEmbeddingScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"VendorEmbedding"> | string
+    vendorId?: UuidWithAggregatesFilter<"VendorEmbedding"> | string
+    content?: StringNullableWithAggregatesFilter<"VendorEmbedding"> | string | null
+    metadata?: JsonWithAggregatesFilter<"VendorEmbedding">
+    createdAt?: DateTimeWithAggregatesFilter<"VendorEmbedding"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"VendorEmbedding"> | Date | string
+  }
+
+  export type EventEmbeddingWhereInput = {
+    AND?: EventEmbeddingWhereInput | EventEmbeddingWhereInput[]
+    OR?: EventEmbeddingWhereInput[]
+    NOT?: EventEmbeddingWhereInput | EventEmbeddingWhereInput[]
+    id?: UuidFilter<"EventEmbedding"> | string
+    eventId?: UuidFilter<"EventEmbedding"> | string
+    content?: StringNullableFilter<"EventEmbedding"> | string | null
+    metadata?: JsonFilter<"EventEmbedding">
+    createdAt?: DateTimeFilter<"EventEmbedding"> | Date | string
+    updatedAt?: DateTimeFilter<"EventEmbedding"> | Date | string
+    event?: XOR<EventScalarRelationFilter, EventWhereInput>
+  }
+
+  export type EventEmbeddingOrderByWithRelationInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    content?: SortOrderInput | SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    event?: EventOrderByWithRelationInput
+  }
+
+  export type EventEmbeddingWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    eventId?: string
+    AND?: EventEmbeddingWhereInput | EventEmbeddingWhereInput[]
+    OR?: EventEmbeddingWhereInput[]
+    NOT?: EventEmbeddingWhereInput | EventEmbeddingWhereInput[]
+    content?: StringNullableFilter<"EventEmbedding"> | string | null
+    metadata?: JsonFilter<"EventEmbedding">
+    createdAt?: DateTimeFilter<"EventEmbedding"> | Date | string
+    updatedAt?: DateTimeFilter<"EventEmbedding"> | Date | string
+    event?: XOR<EventScalarRelationFilter, EventWhereInput>
+  }, "id" | "eventId">
+
+  export type EventEmbeddingOrderByWithAggregationInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    content?: SortOrderInput | SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: EventEmbeddingCountOrderByAggregateInput
+    _max?: EventEmbeddingMaxOrderByAggregateInput
+    _min?: EventEmbeddingMinOrderByAggregateInput
+  }
+
+  export type EventEmbeddingScalarWhereWithAggregatesInput = {
+    AND?: EventEmbeddingScalarWhereWithAggregatesInput | EventEmbeddingScalarWhereWithAggregatesInput[]
+    OR?: EventEmbeddingScalarWhereWithAggregatesInput[]
+    NOT?: EventEmbeddingScalarWhereWithAggregatesInput | EventEmbeddingScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"EventEmbedding"> | string
+    eventId?: UuidWithAggregatesFilter<"EventEmbedding"> | string
+    content?: StringNullableWithAggregatesFilter<"EventEmbedding"> | string | null
+    metadata?: JsonWithAggregatesFilter<"EventEmbedding">
+    createdAt?: DateTimeWithAggregatesFilter<"EventEmbedding"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"EventEmbedding"> | Date | string
+  }
+
   export type VendorCreateInput = {
     id?: string
     name: string
@@ -30605,6 +33117,7 @@ export namespace Prisma {
     eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateInput = {
@@ -30647,6 +33160,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUpdateInput = {
@@ -30689,6 +33203,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateInput = {
@@ -30731,6 +33246,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorCreateManyInput = {
@@ -32592,6 +35108,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     eventVendors?: EventVendorCreateNestedManyWithoutEventInput
+    embedding?: EventEmbeddingCreateNestedOneWithoutEventInput
   }
 
   export type EventUncheckedCreateInput = {
@@ -32625,6 +35142,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutEventInput
+    embedding?: EventEmbeddingUncheckedCreateNestedOneWithoutEventInput
   }
 
   export type EventUpdateInput = {
@@ -32658,6 +35176,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     eventVendors?: EventVendorUpdateManyWithoutEventNestedInput
+    embedding?: EventEmbeddingUpdateOneWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateInput = {
@@ -32691,6 +35210,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     eventVendors?: EventVendorUncheckedUpdateManyWithoutEventNestedInput
+    embedding?: EventEmbeddingUncheckedUpdateOneWithoutEventNestedInput
   }
 
   export type EventCreateManyInput = {
@@ -33336,6 +35856,130 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type VendorEmbeddingCreateInput = {
+    id?: string
+    content?: string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    vendor: VendorCreateNestedOneWithoutEmbeddingInput
+  }
+
+  export type VendorEmbeddingUncheckedCreateInput = {
+    id?: string
+    vendorId: string
+    content?: string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VendorEmbeddingUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    vendor?: VendorUpdateOneRequiredWithoutEmbeddingNestedInput
+  }
+
+  export type VendorEmbeddingUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VendorEmbeddingCreateManyInput = {
+    id?: string
+    vendorId: string
+    content?: string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VendorEmbeddingUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VendorEmbeddingUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    vendorId?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventEmbeddingCreateInput = {
+    id?: string
+    content?: string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    event: EventCreateNestedOneWithoutEmbeddingInput
+  }
+
+  export type EventEmbeddingUncheckedCreateInput = {
+    id?: string
+    eventId: string
+    content?: string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EventEmbeddingUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneRequiredWithoutEmbeddingNestedInput
+  }
+
+  export type EventEmbeddingUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventEmbeddingCreateManyInput = {
+    id?: string
+    eventId: string
+    content?: string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EventEmbeddingUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventEmbeddingUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -33554,6 +36198,11 @@ export namespace Prisma {
     every?: PriceUploadWhereInput
     some?: PriceUploadWhereInput
     none?: PriceUploadWhereInput
+  }
+
+  export type VendorEmbeddingNullableScalarRelationFilter = {
+    is?: VendorEmbeddingWhereInput | null
+    isNot?: VendorEmbeddingWhereInput | null
   }
 
   export type SortOrderInput = {
@@ -35108,6 +37757,11 @@ export namespace Prisma {
     not?: NestedEnumEventStatusFilter<$PrismaModel> | $Enums.EventStatus
   }
 
+  export type EventEmbeddingNullableScalarRelationFilter = {
+    is?: EventEmbeddingWhereInput | null
+    isNot?: EventEmbeddingWhereInput | null
+  }
+
   export type EventCountOrderByAggregateInput = {
     id?: SortOrder
     eventType?: SortOrder
@@ -35575,6 +38229,56 @@ export namespace Prisma {
     rowsAffected?: SortOrder
   }
 
+  export type VendorEmbeddingCountOrderByAggregateInput = {
+    id?: SortOrder
+    vendorId?: SortOrder
+    content?: SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VendorEmbeddingMaxOrderByAggregateInput = {
+    id?: SortOrder
+    vendorId?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VendorEmbeddingMinOrderByAggregateInput = {
+    id?: SortOrder
+    vendorId?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EventEmbeddingCountOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    content?: SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EventEmbeddingMaxOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EventEmbeddingMinOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type VendorCreatekeywordsInput = {
     set: string[]
   }
@@ -35663,6 +38367,12 @@ export namespace Prisma {
     connect?: PriceUploadWhereUniqueInput | PriceUploadWhereUniqueInput[]
   }
 
+  export type VendorEmbeddingCreateNestedOneWithoutVendorInput = {
+    create?: XOR<VendorEmbeddingCreateWithoutVendorInput, VendorEmbeddingUncheckedCreateWithoutVendorInput>
+    connectOrCreate?: VendorEmbeddingCreateOrConnectWithoutVendorInput
+    connect?: VendorEmbeddingWhereUniqueInput
+  }
+
   export type VendorUserUncheckedCreateNestedManyWithoutVendorInput = {
     create?: XOR<VendorUserCreateWithoutVendorInput, VendorUserUncheckedCreateWithoutVendorInput> | VendorUserCreateWithoutVendorInput[] | VendorUserUncheckedCreateWithoutVendorInput[]
     connectOrCreate?: VendorUserCreateOrConnectWithoutVendorInput | VendorUserCreateOrConnectWithoutVendorInput[]
@@ -35745,6 +38455,12 @@ export namespace Prisma {
     connectOrCreate?: PriceUploadCreateOrConnectWithoutVendorInput | PriceUploadCreateOrConnectWithoutVendorInput[]
     createMany?: PriceUploadCreateManyVendorInputEnvelope
     connect?: PriceUploadWhereUniqueInput | PriceUploadWhereUniqueInput[]
+  }
+
+  export type VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput = {
+    create?: XOR<VendorEmbeddingCreateWithoutVendorInput, VendorEmbeddingUncheckedCreateWithoutVendorInput>
+    connectOrCreate?: VendorEmbeddingCreateOrConnectWithoutVendorInput
+    connect?: VendorEmbeddingWhereUniqueInput
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -35964,6 +38680,16 @@ export namespace Prisma {
     deleteMany?: PriceUploadScalarWhereInput | PriceUploadScalarWhereInput[]
   }
 
+  export type VendorEmbeddingUpdateOneWithoutVendorNestedInput = {
+    create?: XOR<VendorEmbeddingCreateWithoutVendorInput, VendorEmbeddingUncheckedCreateWithoutVendorInput>
+    connectOrCreate?: VendorEmbeddingCreateOrConnectWithoutVendorInput
+    upsert?: VendorEmbeddingUpsertWithoutVendorInput
+    disconnect?: VendorEmbeddingWhereInput | boolean
+    delete?: VendorEmbeddingWhereInput | boolean
+    connect?: VendorEmbeddingWhereUniqueInput
+    update?: XOR<XOR<VendorEmbeddingUpdateToOneWithWhereWithoutVendorInput, VendorEmbeddingUpdateWithoutVendorInput>, VendorEmbeddingUncheckedUpdateWithoutVendorInput>
+  }
+
   export type VendorUserUncheckedUpdateManyWithoutVendorNestedInput = {
     create?: XOR<VendorUserCreateWithoutVendorInput, VendorUserUncheckedCreateWithoutVendorInput> | VendorUserCreateWithoutVendorInput[] | VendorUserUncheckedCreateWithoutVendorInput[]
     connectOrCreate?: VendorUserCreateOrConnectWithoutVendorInput | VendorUserCreateOrConnectWithoutVendorInput[]
@@ -36130,6 +38856,16 @@ export namespace Prisma {
     update?: PriceUploadUpdateWithWhereUniqueWithoutVendorInput | PriceUploadUpdateWithWhereUniqueWithoutVendorInput[]
     updateMany?: PriceUploadUpdateManyWithWhereWithoutVendorInput | PriceUploadUpdateManyWithWhereWithoutVendorInput[]
     deleteMany?: PriceUploadScalarWhereInput | PriceUploadScalarWhereInput[]
+  }
+
+  export type VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput = {
+    create?: XOR<VendorEmbeddingCreateWithoutVendorInput, VendorEmbeddingUncheckedCreateWithoutVendorInput>
+    connectOrCreate?: VendorEmbeddingCreateOrConnectWithoutVendorInput
+    upsert?: VendorEmbeddingUpsertWithoutVendorInput
+    disconnect?: VendorEmbeddingWhereInput | boolean
+    delete?: VendorEmbeddingWhereInput | boolean
+    connect?: VendorEmbeddingWhereUniqueInput
+    update?: XOR<XOR<VendorEmbeddingUpdateToOneWithWhereWithoutVendorInput, VendorEmbeddingUpdateWithoutVendorInput>, VendorEmbeddingUncheckedUpdateWithoutVendorInput>
   }
 
   export type VendorUserCreatetwoFactorBackupCodesInput = {
@@ -37630,11 +40366,23 @@ export namespace Prisma {
     connect?: EventVendorWhereUniqueInput | EventVendorWhereUniqueInput[]
   }
 
+  export type EventEmbeddingCreateNestedOneWithoutEventInput = {
+    create?: XOR<EventEmbeddingCreateWithoutEventInput, EventEmbeddingUncheckedCreateWithoutEventInput>
+    connectOrCreate?: EventEmbeddingCreateOrConnectWithoutEventInput
+    connect?: EventEmbeddingWhereUniqueInput
+  }
+
   export type EventVendorUncheckedCreateNestedManyWithoutEventInput = {
     create?: XOR<EventVendorCreateWithoutEventInput, EventVendorUncheckedCreateWithoutEventInput> | EventVendorCreateWithoutEventInput[] | EventVendorUncheckedCreateWithoutEventInput[]
     connectOrCreate?: EventVendorCreateOrConnectWithoutEventInput | EventVendorCreateOrConnectWithoutEventInput[]
     createMany?: EventVendorCreateManyEventInputEnvelope
     connect?: EventVendorWhereUniqueInput | EventVendorWhereUniqueInput[]
+  }
+
+  export type EventEmbeddingUncheckedCreateNestedOneWithoutEventInput = {
+    create?: XOR<EventEmbeddingCreateWithoutEventInput, EventEmbeddingUncheckedCreateWithoutEventInput>
+    connectOrCreate?: EventEmbeddingCreateOrConnectWithoutEventInput
+    connect?: EventEmbeddingWhereUniqueInput
   }
 
   export type EnumEventStatusFieldUpdateOperationsInput = {
@@ -37655,6 +40403,16 @@ export namespace Prisma {
     deleteMany?: EventVendorScalarWhereInput | EventVendorScalarWhereInput[]
   }
 
+  export type EventEmbeddingUpdateOneWithoutEventNestedInput = {
+    create?: XOR<EventEmbeddingCreateWithoutEventInput, EventEmbeddingUncheckedCreateWithoutEventInput>
+    connectOrCreate?: EventEmbeddingCreateOrConnectWithoutEventInput
+    upsert?: EventEmbeddingUpsertWithoutEventInput
+    disconnect?: EventEmbeddingWhereInput | boolean
+    delete?: EventEmbeddingWhereInput | boolean
+    connect?: EventEmbeddingWhereUniqueInput
+    update?: XOR<XOR<EventEmbeddingUpdateToOneWithWhereWithoutEventInput, EventEmbeddingUpdateWithoutEventInput>, EventEmbeddingUncheckedUpdateWithoutEventInput>
+  }
+
   export type EventVendorUncheckedUpdateManyWithoutEventNestedInput = {
     create?: XOR<EventVendorCreateWithoutEventInput, EventVendorUncheckedCreateWithoutEventInput> | EventVendorCreateWithoutEventInput[] | EventVendorUncheckedCreateWithoutEventInput[]
     connectOrCreate?: EventVendorCreateOrConnectWithoutEventInput | EventVendorCreateOrConnectWithoutEventInput[]
@@ -37667,6 +40425,16 @@ export namespace Prisma {
     update?: EventVendorUpdateWithWhereUniqueWithoutEventInput | EventVendorUpdateWithWhereUniqueWithoutEventInput[]
     updateMany?: EventVendorUpdateManyWithWhereWithoutEventInput | EventVendorUpdateManyWithWhereWithoutEventInput[]
     deleteMany?: EventVendorScalarWhereInput | EventVendorScalarWhereInput[]
+  }
+
+  export type EventEmbeddingUncheckedUpdateOneWithoutEventNestedInput = {
+    create?: XOR<EventEmbeddingCreateWithoutEventInput, EventEmbeddingUncheckedCreateWithoutEventInput>
+    connectOrCreate?: EventEmbeddingCreateOrConnectWithoutEventInput
+    upsert?: EventEmbeddingUpsertWithoutEventInput
+    disconnect?: EventEmbeddingWhereInput | boolean
+    delete?: EventEmbeddingWhereInput | boolean
+    connect?: EventEmbeddingWhereUniqueInput
+    update?: XOR<XOR<EventEmbeddingUpdateToOneWithWhereWithoutEventInput, EventEmbeddingUpdateWithoutEventInput>, EventEmbeddingUncheckedUpdateWithoutEventInput>
   }
 
   export type EventCreateNestedOneWithoutEventVendorsInput = {
@@ -37865,6 +40633,34 @@ export namespace Prisma {
     upsert?: PriceUploadUpsertWithoutRecordsInput
     connect?: PriceUploadWhereUniqueInput
     update?: XOR<XOR<PriceUploadUpdateToOneWithWhereWithoutRecordsInput, PriceUploadUpdateWithoutRecordsInput>, PriceUploadUncheckedUpdateWithoutRecordsInput>
+  }
+
+  export type VendorCreateNestedOneWithoutEmbeddingInput = {
+    create?: XOR<VendorCreateWithoutEmbeddingInput, VendorUncheckedCreateWithoutEmbeddingInput>
+    connectOrCreate?: VendorCreateOrConnectWithoutEmbeddingInput
+    connect?: VendorWhereUniqueInput
+  }
+
+  export type VendorUpdateOneRequiredWithoutEmbeddingNestedInput = {
+    create?: XOR<VendorCreateWithoutEmbeddingInput, VendorUncheckedCreateWithoutEmbeddingInput>
+    connectOrCreate?: VendorCreateOrConnectWithoutEmbeddingInput
+    upsert?: VendorUpsertWithoutEmbeddingInput
+    connect?: VendorWhereUniqueInput
+    update?: XOR<XOR<VendorUpdateToOneWithWhereWithoutEmbeddingInput, VendorUpdateWithoutEmbeddingInput>, VendorUncheckedUpdateWithoutEmbeddingInput>
+  }
+
+  export type EventCreateNestedOneWithoutEmbeddingInput = {
+    create?: XOR<EventCreateWithoutEmbeddingInput, EventUncheckedCreateWithoutEmbeddingInput>
+    connectOrCreate?: EventCreateOrConnectWithoutEmbeddingInput
+    connect?: EventWhereUniqueInput
+  }
+
+  export type EventUpdateOneRequiredWithoutEmbeddingNestedInput = {
+    create?: XOR<EventCreateWithoutEmbeddingInput, EventUncheckedCreateWithoutEmbeddingInput>
+    connectOrCreate?: EventCreateOrConnectWithoutEmbeddingInput
+    upsert?: EventUpsertWithoutEmbeddingInput
+    connect?: EventWhereUniqueInput
+    update?: XOR<XOR<EventUpdateToOneWithWhereWithoutEmbeddingInput, EventUpdateWithoutEmbeddingInput>, EventUncheckedUpdateWithoutEmbeddingInput>
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -39226,6 +42022,27 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type VendorEmbeddingCreateWithoutVendorInput = {
+    id?: string
+    content?: string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VendorEmbeddingUncheckedCreateWithoutVendorInput = {
+    id?: string
+    content?: string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VendorEmbeddingCreateOrConnectWithoutVendorInput = {
+    where: VendorEmbeddingWhereUniqueInput
+    create: XOR<VendorEmbeddingCreateWithoutVendorInput, VendorEmbeddingUncheckedCreateWithoutVendorInput>
+  }
+
   export type VendorUserUpsertWithWhereUniqueWithoutVendorInput = {
     where: VendorUserWhereUniqueInput
     update: XOR<VendorUserUpdateWithoutVendorInput, VendorUserUncheckedUpdateWithoutVendorInput>
@@ -39718,6 +42535,33 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"PriceUpload"> | Date | string
   }
 
+  export type VendorEmbeddingUpsertWithoutVendorInput = {
+    update: XOR<VendorEmbeddingUpdateWithoutVendorInput, VendorEmbeddingUncheckedUpdateWithoutVendorInput>
+    create: XOR<VendorEmbeddingCreateWithoutVendorInput, VendorEmbeddingUncheckedCreateWithoutVendorInput>
+    where?: VendorEmbeddingWhereInput
+  }
+
+  export type VendorEmbeddingUpdateToOneWithWhereWithoutVendorInput = {
+    where?: VendorEmbeddingWhereInput
+    data: XOR<VendorEmbeddingUpdateWithoutVendorInput, VendorEmbeddingUncheckedUpdateWithoutVendorInput>
+  }
+
+  export type VendorEmbeddingUpdateWithoutVendorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VendorEmbeddingUncheckedUpdateWithoutVendorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type VendorCreateWithoutUsersInput = {
     id?: string
     name: string
@@ -39757,6 +42601,7 @@ export namespace Prisma {
     eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutUsersInput = {
@@ -39798,6 +42643,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutUsersInput = {
@@ -40589,6 +43435,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutUsersInput = {
@@ -40630,6 +43477,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type AuditLogUpsertWithWhereUniqueWithoutUserInput = {
@@ -40910,6 +43758,7 @@ export namespace Prisma {
     eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutServicesInput = {
@@ -40951,6 +43800,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutServicesInput = {
@@ -41268,6 +44118,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutServicesInput = {
@@ -41309,6 +44160,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type PricingUpsertWithWhereUniqueWithoutServiceInput = {
@@ -41501,6 +44353,7 @@ export namespace Prisma {
     eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutPricingsInput = {
@@ -41542,6 +44395,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutPricingsInput = {
@@ -41884,6 +44738,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutPricingsInput = {
@@ -41925,6 +44780,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUserUpsertWithoutPricingsApprovedInput = {
@@ -42296,6 +45152,7 @@ export namespace Prisma {
     eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutPriceHistoryInput = {
@@ -42337,6 +45194,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutPriceHistoryInput = {
@@ -42621,6 +45479,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutPriceHistoryInput = {
@@ -42662,6 +45521,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUserUpsertWithoutPriceHistoryChangesInput = {
@@ -42796,6 +45656,7 @@ export namespace Prisma {
     eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutDocumentsInput = {
@@ -42837,6 +45698,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutDocumentsInput = {
@@ -43068,6 +45930,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutDocumentsInput = {
@@ -43109,6 +45972,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUserUpsertWithoutDocumentsVerifiedInput = {
@@ -43336,6 +46200,7 @@ export namespace Prisma {
     eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutAuditLogsInput = {
@@ -43377,6 +46242,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutAuditLogsInput = {
@@ -43521,6 +46387,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutAuditLogsInput = {
@@ -43562,6 +46429,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUserUpsertWithoutAuditLogsInput = {
@@ -43696,6 +46564,7 @@ export namespace Prisma {
     eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutBookingsInput = {
@@ -43737,6 +46606,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutBookingsInput = {
@@ -44111,6 +46981,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutBookingsInput = {
@@ -44152,6 +47023,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type ServiceUpsertWithoutBookingsInput = {
@@ -44824,6 +47696,7 @@ export namespace Prisma {
     eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutApiKeysInput = {
@@ -44865,6 +47738,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutApiKeysInput = {
@@ -45096,6 +47970,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutApiKeysInput = {
@@ -45137,6 +48012,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUserUpsertWithoutApiKeysCreatedInput = {
@@ -45364,6 +48240,7 @@ export namespace Prisma {
     eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutWebhooksInput = {
@@ -45405,6 +48282,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutWebhooksInput = {
@@ -45587,6 +48465,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutWebhooksInput = {
@@ -45628,6 +48507,7 @@ export namespace Prisma {
     eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUserUpsertWithoutWebhooksCreatedInput = {
@@ -45905,6 +48785,27 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type EventEmbeddingCreateWithoutEventInput = {
+    id?: string
+    content?: string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EventEmbeddingUncheckedCreateWithoutEventInput = {
+    id?: string
+    content?: string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EventEmbeddingCreateOrConnectWithoutEventInput = {
+    where: EventEmbeddingWhereUniqueInput
+    create: XOR<EventEmbeddingCreateWithoutEventInput, EventEmbeddingUncheckedCreateWithoutEventInput>
+  }
+
   export type EventVendorUpsertWithWhereUniqueWithoutEventInput = {
     where: EventVendorWhereUniqueInput
     update: XOR<EventVendorUpdateWithoutEventInput, EventVendorUncheckedUpdateWithoutEventInput>
@@ -45919,6 +48820,33 @@ export namespace Prisma {
   export type EventVendorUpdateManyWithWhereWithoutEventInput = {
     where: EventVendorScalarWhereInput
     data: XOR<EventVendorUpdateManyMutationInput, EventVendorUncheckedUpdateManyWithoutEventInput>
+  }
+
+  export type EventEmbeddingUpsertWithoutEventInput = {
+    update: XOR<EventEmbeddingUpdateWithoutEventInput, EventEmbeddingUncheckedUpdateWithoutEventInput>
+    create: XOR<EventEmbeddingCreateWithoutEventInput, EventEmbeddingUncheckedCreateWithoutEventInput>
+    where?: EventEmbeddingWhereInput
+  }
+
+  export type EventEmbeddingUpdateToOneWithWhereWithoutEventInput = {
+    where?: EventEmbeddingWhereInput
+    data: XOR<EventEmbeddingUpdateWithoutEventInput, EventEmbeddingUncheckedUpdateWithoutEventInput>
+  }
+
+  export type EventEmbeddingUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventEmbeddingUncheckedUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type EventCreateWithoutEventVendorsInput = {
@@ -45951,6 +48879,7 @@ export namespace Prisma {
     metadata?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    embedding?: EventEmbeddingCreateNestedOneWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutEventVendorsInput = {
@@ -45983,6 +48912,7 @@ export namespace Prisma {
     metadata?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    embedding?: EventEmbeddingUncheckedCreateNestedOneWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutEventVendorsInput = {
@@ -46029,6 +48959,7 @@ export namespace Prisma {
     bookings?: BookingCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutEventVendorsInput = {
@@ -46070,6 +49001,7 @@ export namespace Prisma {
     bookings?: BookingUncheckedCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutEventVendorsInput = {
@@ -46189,6 +49121,7 @@ export namespace Prisma {
     metadata?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    embedding?: EventEmbeddingUpdateOneWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutEventVendorsInput = {
@@ -46221,6 +49154,7 @@ export namespace Prisma {
     metadata?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    embedding?: EventEmbeddingUncheckedUpdateOneWithoutEventNestedInput
   }
 
   export type VendorUpsertWithoutEventVendorsInput = {
@@ -46273,6 +49207,7 @@ export namespace Prisma {
     bookings?: BookingUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutEventVendorsInput = {
@@ -46314,6 +49249,7 @@ export namespace Prisma {
     bookings?: BookingUncheckedUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type ServiceUpsertWithoutEventVendorsInput = {
@@ -46432,6 +49368,7 @@ export namespace Prisma {
     bookings?: BookingCreateNestedManyWithoutVendorInput
     eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutAvailabilityInput = {
@@ -46473,6 +49410,7 @@ export namespace Prisma {
     bookings?: BookingUncheckedCreateNestedManyWithoutVendorInput
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
     priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutAvailabilityInput = {
@@ -46763,6 +49701,7 @@ export namespace Prisma {
     bookings?: BookingUpdateManyWithoutVendorNestedInput
     eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutAvailabilityInput = {
@@ -46804,6 +49743,7 @@ export namespace Prisma {
     bookings?: BookingUncheckedUpdateManyWithoutVendorNestedInput
     eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
     priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type ServiceUpsertWithoutAvailabilityInput = {
@@ -47096,6 +50036,7 @@ export namespace Prisma {
     bookings?: BookingCreateNestedManyWithoutVendorInput
     eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingCreateNestedOneWithoutVendorInput
   }
 
   export type VendorUncheckedCreateWithoutPriceUploadsInput = {
@@ -47137,6 +50078,7 @@ export namespace Prisma {
     bookings?: BookingUncheckedCreateNestedManyWithoutVendorInput
     eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
     availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
+    embedding?: VendorEmbeddingUncheckedCreateNestedOneWithoutVendorInput
   }
 
   export type VendorCreateOrConnectWithoutPriceUploadsInput = {
@@ -47323,6 +50265,7 @@ export namespace Prisma {
     bookings?: BookingUpdateManyWithoutVendorNestedInput
     eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUncheckedUpdateWithoutPriceUploadsInput = {
@@ -47364,6 +50307,7 @@ export namespace Prisma {
     bookings?: BookingUncheckedUpdateManyWithoutVendorNestedInput
     eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
     availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
+    embedding?: VendorEmbeddingUncheckedUpdateOneWithoutVendorNestedInput
   }
 
   export type VendorUserUpsertWithoutPriceUploadsUploadedInput = {
@@ -47581,6 +50525,338 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VendorCreateWithoutEmbeddingInput = {
+    id?: string
+    name: string
+    businessType?: string | null
+    contactEmail: string
+    phone?: string | null
+    address?: JsonNullValueInput | InputJsonValue
+    description?: string | null
+    logoUrl?: string | null
+    website?: string | null
+    verified?: boolean
+    verifiedAt?: Date | string | null
+    verifiedBy?: string | null
+    status?: $Enums.VendorStatus
+    tier?: $Enums.VendorTier
+    apiEnabled?: boolean
+    apiConfig?: JsonNullValueInput | InputJsonValue
+    serviceAreas?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    keywords?: VendorCreatekeywordsInput | string[]
+    pricingMin?: Decimal | DecimalJsLike | number | string | null
+    pricingMax?: Decimal | DecimalJsLike | number | string | null
+    rating?: Decimal | DecimalJsLike | number | string | null
+    totalReviews?: number
+    category?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: VendorUserCreateNestedManyWithoutVendorInput
+    services?: ServiceCreateNestedManyWithoutVendorInput
+    pricings?: PricingCreateNestedManyWithoutVendorInput
+    priceHistory?: PriceHistoryCreateNestedManyWithoutVendorInput
+    documents?: VendorDocumentCreateNestedManyWithoutVendorInput
+    auditLogs?: AuditLogCreateNestedManyWithoutVendorInput
+    apiKeys?: ApiKeyCreateNestedManyWithoutVendorInput
+    webhooks?: WebhookCreateNestedManyWithoutVendorInput
+    bookings?: BookingCreateNestedManyWithoutVendorInput
+    eventVendors?: EventVendorCreateNestedManyWithoutVendorInput
+    availability?: VendorAvailabilityCreateNestedManyWithoutVendorInput
+    priceUploads?: PriceUploadCreateNestedManyWithoutVendorInput
+  }
+
+  export type VendorUncheckedCreateWithoutEmbeddingInput = {
+    id?: string
+    name: string
+    businessType?: string | null
+    contactEmail: string
+    phone?: string | null
+    address?: JsonNullValueInput | InputJsonValue
+    description?: string | null
+    logoUrl?: string | null
+    website?: string | null
+    verified?: boolean
+    verifiedAt?: Date | string | null
+    verifiedBy?: string | null
+    status?: $Enums.VendorStatus
+    tier?: $Enums.VendorTier
+    apiEnabled?: boolean
+    apiConfig?: JsonNullValueInput | InputJsonValue
+    serviceAreas?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    keywords?: VendorCreatekeywordsInput | string[]
+    pricingMin?: Decimal | DecimalJsLike | number | string | null
+    pricingMax?: Decimal | DecimalJsLike | number | string | null
+    rating?: Decimal | DecimalJsLike | number | string | null
+    totalReviews?: number
+    category?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: VendorUserUncheckedCreateNestedManyWithoutVendorInput
+    services?: ServiceUncheckedCreateNestedManyWithoutVendorInput
+    pricings?: PricingUncheckedCreateNestedManyWithoutVendorInput
+    priceHistory?: PriceHistoryUncheckedCreateNestedManyWithoutVendorInput
+    documents?: VendorDocumentUncheckedCreateNestedManyWithoutVendorInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutVendorInput
+    apiKeys?: ApiKeyUncheckedCreateNestedManyWithoutVendorInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutVendorInput
+    bookings?: BookingUncheckedCreateNestedManyWithoutVendorInput
+    eventVendors?: EventVendorUncheckedCreateNestedManyWithoutVendorInput
+    availability?: VendorAvailabilityUncheckedCreateNestedManyWithoutVendorInput
+    priceUploads?: PriceUploadUncheckedCreateNestedManyWithoutVendorInput
+  }
+
+  export type VendorCreateOrConnectWithoutEmbeddingInput = {
+    where: VendorWhereUniqueInput
+    create: XOR<VendorCreateWithoutEmbeddingInput, VendorUncheckedCreateWithoutEmbeddingInput>
+  }
+
+  export type VendorUpsertWithoutEmbeddingInput = {
+    update: XOR<VendorUpdateWithoutEmbeddingInput, VendorUncheckedUpdateWithoutEmbeddingInput>
+    create: XOR<VendorCreateWithoutEmbeddingInput, VendorUncheckedCreateWithoutEmbeddingInput>
+    where?: VendorWhereInput
+  }
+
+  export type VendorUpdateToOneWithWhereWithoutEmbeddingInput = {
+    where?: VendorWhereInput
+    data: XOR<VendorUpdateWithoutEmbeddingInput, VendorUncheckedUpdateWithoutEmbeddingInput>
+  }
+
+  export type VendorUpdateWithoutEmbeddingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    businessType?: NullableStringFieldUpdateOperationsInput | string | null
+    contactEmail?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: JsonNullValueInput | InputJsonValue
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    verifiedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumVendorStatusFieldUpdateOperationsInput | $Enums.VendorStatus
+    tier?: EnumVendorTierFieldUpdateOperationsInput | $Enums.VendorTier
+    apiEnabled?: BoolFieldUpdateOperationsInput | boolean
+    apiConfig?: JsonNullValueInput | InputJsonValue
+    serviceAreas?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    keywords?: VendorUpdatekeywordsInput | string[]
+    pricingMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    pricingMax?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    rating?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    totalReviews?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: VendorUserUpdateManyWithoutVendorNestedInput
+    services?: ServiceUpdateManyWithoutVendorNestedInput
+    pricings?: PricingUpdateManyWithoutVendorNestedInput
+    priceHistory?: PriceHistoryUpdateManyWithoutVendorNestedInput
+    documents?: VendorDocumentUpdateManyWithoutVendorNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutVendorNestedInput
+    apiKeys?: ApiKeyUpdateManyWithoutVendorNestedInput
+    webhooks?: WebhookUpdateManyWithoutVendorNestedInput
+    bookings?: BookingUpdateManyWithoutVendorNestedInput
+    eventVendors?: EventVendorUpdateManyWithoutVendorNestedInput
+    availability?: VendorAvailabilityUpdateManyWithoutVendorNestedInput
+    priceUploads?: PriceUploadUpdateManyWithoutVendorNestedInput
+  }
+
+  export type VendorUncheckedUpdateWithoutEmbeddingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    businessType?: NullableStringFieldUpdateOperationsInput | string | null
+    contactEmail?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: JsonNullValueInput | InputJsonValue
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    verifiedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumVendorStatusFieldUpdateOperationsInput | $Enums.VendorStatus
+    tier?: EnumVendorTierFieldUpdateOperationsInput | $Enums.VendorTier
+    apiEnabled?: BoolFieldUpdateOperationsInput | boolean
+    apiConfig?: JsonNullValueInput | InputJsonValue
+    serviceAreas?: JsonNullValueInput | InputJsonValue
+    settings?: JsonNullValueInput | InputJsonValue
+    metadata?: JsonNullValueInput | InputJsonValue
+    keywords?: VendorUpdatekeywordsInput | string[]
+    pricingMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    pricingMax?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    rating?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    totalReviews?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: VendorUserUncheckedUpdateManyWithoutVendorNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutVendorNestedInput
+    pricings?: PricingUncheckedUpdateManyWithoutVendorNestedInput
+    priceHistory?: PriceHistoryUncheckedUpdateManyWithoutVendorNestedInput
+    documents?: VendorDocumentUncheckedUpdateManyWithoutVendorNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutVendorNestedInput
+    apiKeys?: ApiKeyUncheckedUpdateManyWithoutVendorNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutVendorNestedInput
+    bookings?: BookingUncheckedUpdateManyWithoutVendorNestedInput
+    eventVendors?: EventVendorUncheckedUpdateManyWithoutVendorNestedInput
+    availability?: VendorAvailabilityUncheckedUpdateManyWithoutVendorNestedInput
+    priceUploads?: PriceUploadUncheckedUpdateManyWithoutVendorNestedInput
+  }
+
+  export type EventCreateWithoutEmbeddingInput = {
+    id?: string
+    eventType: string
+    eventName?: string | null
+    eventDate: Date | string
+    eventTime?: Date | string | null
+    eventEndDate?: Date | string | null
+    eventEndTime?: Date | string | null
+    location?: string | null
+    venueDetails?: JsonNullValueInput | InputJsonValue
+    clientName?: string | null
+    clientEmail?: string | null
+    clientPhone?: string | null
+    attendees?: number | null
+    budget?: Decimal | DecimalJsLike | number | string | null
+    currency?: string
+    totalQuoted?: Decimal | DecimalJsLike | number | string | null
+    totalPaid?: Decimal | DecimalJsLike | number | string
+    status?: $Enums.EventStatus
+    preferences?: JsonNullValueInput | InputJsonValue
+    requirements?: string | null
+    agentSessionId?: string | null
+    agentPlan?: JsonNullValueInput | InputJsonValue
+    agentLogs?: JsonNullValueInput | InputJsonValue
+    requiresApproval?: boolean
+    approvedAt?: Date | string | null
+    approvedBy?: string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    eventVendors?: EventVendorCreateNestedManyWithoutEventInput
+  }
+
+  export type EventUncheckedCreateWithoutEmbeddingInput = {
+    id?: string
+    eventType: string
+    eventName?: string | null
+    eventDate: Date | string
+    eventTime?: Date | string | null
+    eventEndDate?: Date | string | null
+    eventEndTime?: Date | string | null
+    location?: string | null
+    venueDetails?: JsonNullValueInput | InputJsonValue
+    clientName?: string | null
+    clientEmail?: string | null
+    clientPhone?: string | null
+    attendees?: number | null
+    budget?: Decimal | DecimalJsLike | number | string | null
+    currency?: string
+    totalQuoted?: Decimal | DecimalJsLike | number | string | null
+    totalPaid?: Decimal | DecimalJsLike | number | string
+    status?: $Enums.EventStatus
+    preferences?: JsonNullValueInput | InputJsonValue
+    requirements?: string | null
+    agentSessionId?: string | null
+    agentPlan?: JsonNullValueInput | InputJsonValue
+    agentLogs?: JsonNullValueInput | InputJsonValue
+    requiresApproval?: boolean
+    approvedAt?: Date | string | null
+    approvedBy?: string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    eventVendors?: EventVendorUncheckedCreateNestedManyWithoutEventInput
+  }
+
+  export type EventCreateOrConnectWithoutEmbeddingInput = {
+    where: EventWhereUniqueInput
+    create: XOR<EventCreateWithoutEmbeddingInput, EventUncheckedCreateWithoutEmbeddingInput>
+  }
+
+  export type EventUpsertWithoutEmbeddingInput = {
+    update: XOR<EventUpdateWithoutEmbeddingInput, EventUncheckedUpdateWithoutEmbeddingInput>
+    create: XOR<EventCreateWithoutEmbeddingInput, EventUncheckedCreateWithoutEmbeddingInput>
+    where?: EventWhereInput
+  }
+
+  export type EventUpdateToOneWithWhereWithoutEmbeddingInput = {
+    where?: EventWhereInput
+    data: XOR<EventUpdateWithoutEmbeddingInput, EventUncheckedUpdateWithoutEmbeddingInput>
+  }
+
+  export type EventUpdateWithoutEmbeddingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    eventName?: NullableStringFieldUpdateOperationsInput | string | null
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    venueDetails?: JsonNullValueInput | InputJsonValue
+    clientName?: NullableStringFieldUpdateOperationsInput | string | null
+    clientEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    clientPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    attendees?: NullableIntFieldUpdateOperationsInput | number | null
+    budget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currency?: StringFieldUpdateOperationsInput | string
+    totalQuoted?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    totalPaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+    preferences?: JsonNullValueInput | InputJsonValue
+    requirements?: NullableStringFieldUpdateOperationsInput | string | null
+    agentSessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    agentPlan?: JsonNullValueInput | InputJsonValue
+    agentLogs?: JsonNullValueInput | InputJsonValue
+    requiresApproval?: BoolFieldUpdateOperationsInput | boolean
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventVendors?: EventVendorUpdateManyWithoutEventNestedInput
+  }
+
+  export type EventUncheckedUpdateWithoutEmbeddingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    eventName?: NullableStringFieldUpdateOperationsInput | string | null
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    venueDetails?: JsonNullValueInput | InputJsonValue
+    clientName?: NullableStringFieldUpdateOperationsInput | string | null
+    clientEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    clientPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    attendees?: NullableIntFieldUpdateOperationsInput | number | null
+    budget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currency?: StringFieldUpdateOperationsInput | string
+    totalQuoted?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    totalPaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    status?: EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+    preferences?: JsonNullValueInput | InputJsonValue
+    requirements?: NullableStringFieldUpdateOperationsInput | string | null
+    agentSessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    agentPlan?: JsonNullValueInput | InputJsonValue
+    agentLogs?: JsonNullValueInput | InputJsonValue
+    requiresApproval?: BoolFieldUpdateOperationsInput | boolean
+    approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventVendors?: EventVendorUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type VendorUserCreateManyVendorInput = {

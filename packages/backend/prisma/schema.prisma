@@ -6,11 +6,13 @@ generator client {
   engineType = "library"
   output     = "../src/generated/client"
   binaryTargets = ["native", "windows"]
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector", schema: "public")]
 }
 
 // ============================================
@@ -283,6 +285,7 @@ model Vendor {
   eventVendors   EventVendor[]
   availability   VendorAvailability[]
   priceUploads   PriceUpload[]
+  embedding      VendorEmbedding?
 
   @@map("vendors")
 }
@@ -796,6 +799,7 @@ model Event {
 
   // Relations
   eventVendors EventVendor[]
+  embedding    EventEmbedding?
 
   @@index([status])
   @@index([eventDate])
@@ -945,4 +949,40 @@ model QueryPerformanceLog {
   @@index([queryType])
   @@index([createdAt])
   @@map("query_performance_log")
+}
+
+// ============================================
+// Vector Embeddings for AI Search (pgvector)
+// ============================================
+
+model VendorEmbedding {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId  String   @unique @map("vendor_id") @db.Uuid
+  embedding Unsupported("vector(1536)")?
+  content   String?
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@map("vendor_embeddings")
+}
+
+model EventEmbedding {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId   String   @unique @map("event_id") @db.Uuid
+  embedding Unsupported("vector(1536)")?
+  content   String?
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@map("event_embeddings")
 }

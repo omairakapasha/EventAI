@@ -122,7 +122,7 @@ export const config = {
         maxRequests: env.RATE_LIMIT_MAX_REQUESTS,
     },
     cors: {
-        origin: env.CORS_ORIGIN,
+        origin: env.CORS_ORIGIN.split(',').map(o => o.trim()),
     },
     logging: {
         level: env.LOG_LEVEL,

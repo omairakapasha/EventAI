@@ -1,8 +1,0 @@
-pydantic
-python-dotenv
-requests
-chainlit
-ortools
-google-generativeai
-psycopg2-binary
-mcp
