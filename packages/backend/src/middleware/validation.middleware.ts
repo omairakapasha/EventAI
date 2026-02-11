@@ -1,16 +1,23 @@
-import { Request, Response, NextFunction } from 'express';
+import { FastifyRequest, FastifyReply } from 'fastify';
 import { ZodSchema, ZodError } from 'zod';
 
 export function validate(schema: ZodSchema, source: 'body' | 'query' | 'params' = 'body') {
-    return (req: Request, res: Response, next: NextFunction): void => {
+    return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
         try {
-            const data = req[source];
+            const data = source === 'body' ? request.body
+                : source === 'query' ? request.query
+                    : request.params;
+
             const result = schema.parse(data);
 
             // Replace with parsed data (includes type coercion)
-            req[source] = result;
-
-            next();
+            if (source === 'body') {
+                (request as any).body = result;
+            } else if (source === 'query') {
+                (request as any).query = result;
+            } else {
+                (request as any).params = result;
+            }
         } catch (error) {
             if (error instanceof ZodError) {
                 const formattedErrors = error.issues.map((err) => ({
@@ -19,7 +26,7 @@ export function validate(schema: ZodSchema, source: 'body' | 'query' | 'params' 
                     code: err.code,
                 }));
 
-                res.status(400).json({
+                reply.status(400).send({
                     error: 'Validation Error',
                     message: 'Request validation failed',
                     details: formattedErrors,
@@ -27,7 +34,7 @@ export function validate(schema: ZodSchema, source: 'body' | 'query' | 'params' 
                 return;
             }
 
-            res.status(400).json({
+            reply.status(400).send({
                 error: 'Validation Error',
                 message: 'Invalid request data',
             });

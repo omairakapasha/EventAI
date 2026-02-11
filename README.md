@@ -90,6 +90,33 @@ Event-AI/
    pnpm dev:vendor    # Vendor portal only
    ```
 
+### Option 3: Windows / No Docker Setup
+
+If you cannot or do not want to use Docker, follow these steps:
+
+1. **Install Prerequisites Manually:**
+   - PostgreSQL (Create a database named `event_ai`)
+   - Redis (Optional, but recommended for full functionality)
+
+2. **Configure Environment:**
+   - Update `.env` files to point to your local PostgreSQL and Redis instances.
+   - Example `DATABASE_URL=postgresql://postgres:password@localhost:5432/event_ai`
+
+3. **Install & Setup:**
+   ```bash
+   npm run setup:nodocker
+   ```
+
+4. **Start the Application:**
+   ```bash
+   pnpm dev
+   ```
+
+   **Note for Windows Users:**
+   - The project is configured with `rimraf` for cross-platform cleanup.
+   - Database migrations use `prisma` which is compatible with Windows.
+   - If you encounter execution policy errors in PowerShell, try running as Administrator or use Command Prompt.
+
 ## 📦 Packages
 
 ### Backend (`packages/backend`)

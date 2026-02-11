@@ -1,93 +1,72 @@
-import rateLimit from 'express-rate-limit';
+import { FastifyRequest } from 'fastify';
 import { config } from '../config/env.js';
-import { Request } from 'express';
 
-// Default rate limiter
-export const defaultLimiter = rateLimit({
-    windowMs: config.rateLimit.windowMs,
+// Rate limit configuration objects for @fastify/rate-limit
+// These are used as route-level config: { config: { rateLimit: authRateLimitConfig } }
+
+export const defaultRateLimitConfig = {
     max: config.rateLimit.maxRequests,
-    message: {
+    timeWindow: config.rateLimit.windowMs,
+    keyGenerator: (request: FastifyRequest) => {
+        return request.user?.vendorId || request.ip || 'unknown';
+    },
+    errorResponseBuilder: () => ({
         error: 'Too Many Requests',
         message: 'You have exceeded the rate limit. Please try again later.',
         retryAfter: Math.ceil(config.rateLimit.windowMs / 1000),
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    keyGenerator: (req: Request) => {
-        // Use vendor ID if authenticated, otherwise IP
-        return req.user?.vendorId || req.ip || 'unknown';
-    },
-    // Disable IPv6 validation since we handle vendor IDs as fallback
-    validate: { keyGeneratorIpFallback: false },
-});
+    }),
+};
 
-// Strict rate limiter for auth endpoints
-export const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // 10 attempts per window
-    message: {
+export const authRateLimitConfig = {
+    max: 10,
+    timeWindow: 15 * 60 * 1000, // 15 minutes
+    errorResponseBuilder: () => ({
         error: 'Too Many Requests',
         message: 'Too many authentication attempts. Please try again in 15 minutes.',
         retryAfter: 900,
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    skipSuccessfulRequests: true, // Don't count successful logins
-});
+    }),
+};
 
-// Very strict limiter for password reset
-export const passwordResetLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 3, // 3 attempts per hour
-    message: {
+export const passwordResetRateLimitConfig = {
+    max: 3,
+    timeWindow: 60 * 60 * 1000, // 1 hour
+    errorResponseBuilder: () => ({
         error: 'Too Many Requests',
         message: 'Too many password reset attempts. Please try again in 1 hour.',
         retryAfter: 3600,
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
+    }),
+};
 
-// API key rate limiter (per vendor)
-export const apiKeyLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 60, // 60 requests per minute
-    message: {
+export const apiKeyRateLimitConfig = {
+    max: 60,
+    timeWindow: 60 * 1000, // 1 minute
+    keyGenerator: (request: FastifyRequest) => {
+        return request.user?.vendorId || request.ip || 'unknown';
+    },
+    errorResponseBuilder: () => ({
         error: 'Rate Limit Exceeded',
         message: 'API rate limit exceeded. Please slow down your requests.',
         retryAfter: 60,
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    keyGenerator: (req: Request) => {
-        return req.user?.vendorId || req.ip || 'unknown';
-    },
-    // Disable IPv6 validation since we handle vendor IDs as fallback
-    validate: { keyGeneratorIpFallback: false },
-});
+    }),
+};
 
-// Upload rate limiter
-export const uploadLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 50, // 50 uploads per hour
-    message: {
+export const uploadRateLimitConfig = {
+    max: 50,
+    timeWindow: 60 * 60 * 1000, // 1 hour
+    keyGenerator: (request: FastifyRequest) => {
+        return request.user?.vendorId || request.ip || 'unknown';
+    },
+    errorResponseBuilder: () => ({
         error: 'Too Many Uploads',
         message: 'Upload limit reached. Please try again later.',
         retryAfter: 3600,
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    keyGenerator: (req: Request) => {
-        return req.user?.vendorId || req.ip || 'unknown';
-    },
-    // Disable IPv6 validation since we handle vendor IDs as fallback
-    validate: { keyGeneratorIpFallback: false },
-});
+    }),
+};
 
 export default {
-    defaultLimiter,
-    authLimiter,
-    passwordResetLimiter,
-    apiKeyLimiter,
-    uploadLimiter,
+    defaultRateLimitConfig,
+    authRateLimitConfig,
+    passwordResetRateLimitConfig,
+    apiKeyRateLimitConfig,
+    uploadRateLimitConfig,
 };

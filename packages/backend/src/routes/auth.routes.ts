@@ -1,8 +1,8 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authService } from '../services/auth.service.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { validateBody } from '../middleware/validation.middleware.js';
-import { authLimiter, passwordResetLimiter } from '../middleware/rateLimit.middleware.js';
+import { authRateLimitConfig, passwordResetRateLimitConfig } from '../middleware/rateLimit.middleware.js';
 import {
     registerSchema,
     loginSchema,
@@ -14,313 +14,304 @@ import {
 } from '../schemas/index.js';
 import { logger } from '../utils/logger.js';
 
-const router: Router = Router();
+export default async function authRoutes(fastify: FastifyInstance): Promise<void> {
 
-// POST /api/v1/vendors/register
-router.post(
-    '/register',
-    authLimiter,
-    validateBody(registerSchema),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const result = await authService.register(req.body);
+    // POST /register
+    fastify.post(
+        '/register',
+        {
+            config: { rateLimit: authRateLimitConfig },
+            preHandler: [validateBody(registerSchema)],
+        },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            try {
+                const result = await authService.register(request.body as any);
 
-            // TODO: Send verification email
-            logger.info('Vendor registered, verification email should be sent', {
-                vendorId: result.vendor.id,
-                email: result.user.email,
-            });
-
-            res.status(201).json({
-                message: 'Registration successful. Please verify your email.',
-                vendor: {
-                    id: result.vendor.id,
-                    name: result.vendor.name,
-                },
-                user: {
-                    id: result.user.id,
+                logger.info('Vendor registered, verification email should be sent', {
+                    vendorId: result.vendor.id,
                     email: result.user.email,
-                },
-            });
-        } catch (error: any) {
-            if (error.message.includes('already registered')) {
-                res.status(409).json({
-                    error: 'Conflict',
-                    message: error.message,
                 });
-                return;
+
+                return reply.status(201).send({
+                    message: 'Registration successful. Please verify your email.',
+                    vendor: {
+                        id: result.vendor.id,
+                        name: result.vendor.name,
+                    },
+                    user: {
+                        id: result.user.id,
+                        email: result.user.email,
+                    },
+                });
+            } catch (error: any) {
+                if (error.message.includes('already registered')) {
+                    return reply.status(409).send({
+                        error: 'Conflict',
+                        message: error.message,
+                    });
+                }
+                throw error;
             }
-            next(error);
         }
-    }
-);
+    );
 
-// POST /api/v1/vendors/login
-router.post(
-    '/login',
-    authLimiter,
-    validateBody(loginSchema),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const result = await authService.login(req.body, req.ip);
+    // POST /login
+    fastify.post(
+        '/login',
+        {
+            config: { rateLimit: authRateLimitConfig },
+            preHandler: [validateBody(loginSchema)],
+        },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            try {
+                const result = await authService.login(request.body as any, request.ip);
 
-            if (result.requiresTwoFactor) {
-                res.status(200).json({
-                    message: 'Two-factor authentication required',
-                    requiresTwoFactor: true,
+                if (result.requiresTwoFactor) {
+                    return reply.status(200).send({
+                        message: 'Two-factor authentication required',
+                        requiresTwoFactor: true,
+                    });
+                }
+
+                return reply.send({
+                    message: 'Login successful',
+                    user: result.user,
+                    vendor: result.vendor,
+                    accessToken: result.accessToken,
+                    refreshToken: result.refreshToken,
                 });
-                return;
+            } catch (error: any) {
+                if (error.message.includes('Invalid') || error.message.includes('locked')) {
+                    return reply.status(401).send({
+                        error: 'Unauthorized',
+                        message: error.message,
+                    });
+                }
+                if (error.message.includes('verify your email')) {
+                    return reply.status(403).send({
+                        error: 'Forbidden',
+                        message: error.message,
+                        code: 'EMAIL_NOT_VERIFIED',
+                    });
+                }
+                if (error.message.includes('suspended') || error.message.includes('deactivated')) {
+                    return reply.status(403).send({
+                        error: 'Forbidden',
+                        message: error.message,
+                    });
+                }
+                throw error;
             }
+        }
+    );
 
-            res.json({
-                message: 'Login successful',
-                user: result.user,
-                vendor: result.vendor,
-                accessToken: result.accessToken,
-                refreshToken: result.refreshToken,
+    // POST /logout
+    fastify.post(
+        '/logout',
+        { onRequest: [authMiddleware] },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            const body = request.body as any;
+            const refreshToken = body.refreshToken;
+            await authService.logout(request.user!.userId, refreshToken);
+
+            return reply.send({
+                message: 'Logout successful',
             });
-        } catch (error: any) {
-            if (error.message.includes('Invalid') || error.message.includes('locked')) {
-                res.status(401).json({
+        }
+    );
+
+    // POST /refresh-token
+    fastify.post(
+        '/refresh-token',
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            try {
+                const { refreshToken } = request.body as any;
+
+                if (!refreshToken) {
+                    return reply.status(400).send({
+                        error: 'Bad Request',
+                        message: 'Refresh token is required',
+                    });
+                }
+
+                const tokens = await authService.refreshTokens(refreshToken);
+
+                return reply.send({
+                    accessToken: tokens.accessToken,
+                    refreshToken: tokens.refreshToken,
+                });
+            } catch (error: any) {
+                return reply.status(401).send({
                     error: 'Unauthorized',
                     message: error.message,
                 });
-                return;
             }
-            if (error.message.includes('verify your email')) {
-                res.status(403).json({
-                    error: 'Forbidden',
-                    message: error.message,
-                    code: 'EMAIL_NOT_VERIFIED',
-                });
-                return;
-            }
-            if (error.message.includes('suspended') || error.message.includes('deactivated')) {
-                res.status(403).json({
-                    error: 'Forbidden',
-                    message: error.message,
-                });
-                return;
-            }
-            next(error);
         }
-    }
-);
+    );
 
-// POST /api/v1/vendors/logout
-router.post(
-    '/logout',
-    authMiddleware,
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const refreshToken = req.body.refreshToken;
-            await authService.logout(req.user!.userId, refreshToken);
+    // POST /forgot-password
+    fastify.post(
+        '/forgot-password',
+        {
+            config: { rateLimit: passwordResetRateLimitConfig },
+            preHandler: [validateBody(forgotPasswordSchema)],
+        },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            await authService.forgotPassword((request.body as any).email);
 
-            res.json({
-                message: 'Logout successful',
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-// POST /api/v1/vendors/refresh-token
-router.post(
-    '/refresh-token',
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const { refreshToken } = req.body;
-
-            if (!refreshToken) {
-                res.status(400).json({
-                    error: 'Bad Request',
-                    message: 'Refresh token is required',
-                });
-                return;
-            }
-
-            const tokens = await authService.refreshTokens(refreshToken);
-
-            res.json({
-                accessToken: tokens.accessToken,
-                refreshToken: tokens.refreshToken,
-            });
-        } catch (error: any) {
-            res.status(401).json({
-                error: 'Unauthorized',
-                message: error.message,
-            });
-        }
-    }
-);
-
-// POST /api/v1/vendors/forgot-password
-router.post(
-    '/forgot-password',
-    passwordResetLimiter,
-    validateBody(forgotPasswordSchema),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            await authService.forgotPassword(req.body.email);
-
-            // Always return success to prevent email enumeration
-            res.json({
+            return reply.send({
                 message: 'If the email exists, a password reset link has been sent.',
             });
-        } catch (error) {
-            next(error);
         }
-    }
-);
+    );
 
-// POST /api/v1/vendors/reset-password
-router.post(
-    '/reset-password',
-    passwordResetLimiter,
-    validateBody(resetPasswordSchema),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            await authService.resetPassword(req.body.token, req.body.password);
+    // POST /reset-password
+    fastify.post(
+        '/reset-password',
+        {
+            config: { rateLimit: passwordResetRateLimitConfig },
+            preHandler: [validateBody(resetPasswordSchema)],
+        },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            try {
+                const body = request.body as any;
+                await authService.resetPassword(body.token, body.password);
 
-            res.json({
-                message: 'Password reset successful. Please login with your new password.',
-            });
-        } catch (error: any) {
-            if (error.message.includes('Invalid') || error.message.includes('expired')) {
-                res.status(400).json({
+                return reply.send({
+                    message: 'Password reset successful. Please login with your new password.',
+                });
+            } catch (error: any) {
+                if (error.message.includes('Invalid') || error.message.includes('expired')) {
+                    return reply.status(400).send({
+                        error: 'Bad Request',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        }
+    );
+
+    // GET /verify-email/:token
+    fastify.get<{ Params: { token: string } }>(
+        '/verify-email/:token',
+        async (request, reply) => {
+            try {
+                await authService.verifyEmail(request.params.token);
+
+                return reply.send({
+                    message: 'Email verified successfully. You can now login.',
+                });
+            } catch (error: any) {
+                return reply.status(400).send({
                     error: 'Bad Request',
                     message: error.message,
                 });
-                return;
             }
-            next(error);
         }
-    }
-);
+    );
 
-// GET /api/v1/vendors/verify-email/:token
-router.get(
-    '/verify-email/:token',
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            await authService.verifyEmail(req.params.token as string);
+    // ============ 2FA ROUTES ============
 
-            res.json({
-                message: 'Email verified successfully. You can now login.',
-            });
-        } catch (error: any) {
-            res.status(400).json({
-                error: 'Bad Request',
-                message: error.message,
-            });
-        }
-    }
-);
+    // POST /2fa/setup
+    fastify.post(
+        '/2fa/setup',
+        { onRequest: [authMiddleware] },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            const setup = await authService.setup2FA(request.user!.userId);
 
-// ============ 2FA ROUTES ============
-
-// POST /api/v1/vendors/2fa/setup
-router.post(
-    '/2fa/setup',
-    authMiddleware,
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const setup = await authService.setup2FA(req.user!.userId);
-
-            res.json({
+            return reply.send({
                 message: 'Scan the QR code with your authenticator app',
                 secret: setup.secret,
                 qrCode: setup.qrCode,
                 backupCodes: setup.backupCodes,
             });
-        } catch (error) {
-            next(error);
         }
-    }
-);
+    );
 
-// POST /api/v1/vendors/2fa/enable
-router.post(
-    '/2fa/enable',
-    authMiddleware,
-    validateBody(confirm2FASchema),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            await authService.enable2FA(req.user!.userId, req.body.secret, req.body.code);
+    // POST /2fa/enable
+    fastify.post(
+        '/2fa/enable',
+        {
+            onRequest: [authMiddleware],
+            preHandler: [validateBody(confirm2FASchema)],
+        },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            try {
+                const body = request.body as any;
+                await authService.enable2FA(request.user!.userId, body.secret, body.code);
 
-            res.json({
-                message: 'Two-factor authentication enabled successfully',
-            });
-        } catch (error: any) {
-            if (error.message.includes('Invalid')) {
-                res.status(400).json({
-                    error: 'Bad Request',
+                return reply.send({
+                    message: 'Two-factor authentication enabled successfully',
+                });
+            } catch (error: any) {
+                if (error.message.includes('Invalid')) {
+                    return reply.status(400).send({
+                        error: 'Bad Request',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        }
+    );
+
+    // POST /2fa/disable
+    fastify.post(
+        '/2fa/disable',
+        {
+            onRequest: [authMiddleware],
+            preHandler: [validateBody(enable2FASchema)],
+        },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            try {
+                const body = request.body as any;
+                await authService.disable2FA(request.user!.userId, body.password);
+
+                return reply.send({
+                    message: 'Two-factor authentication disabled',
+                });
+            } catch (error: any) {
+                if (error.message.includes('Invalid')) {
+                    return reply.status(400).send({
+                        error: 'Bad Request',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        }
+    );
+
+    // POST /verify-2fa
+    fastify.post(
+        '/verify-2fa',
+        {
+            config: { rateLimit: authRateLimitConfig },
+            preHandler: [validateBody(verify2FASchema)],
+        },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            try {
+                const { email, password, code } = request.body as any;
+
+                const result = await authService.login(
+                    { email, password, twoFactorCode: code, rememberMe: false },
+                    request.ip
+                );
+
+                return reply.send({
+                    message: 'Login successful',
+                    user: result.user,
+                    vendor: result.vendor,
+                    accessToken: result.accessToken,
+                    refreshToken: result.refreshToken,
+                });
+            } catch (error: any) {
+                return reply.status(401).send({
+                    error: 'Unauthorized',
                     message: error.message,
                 });
-                return;
             }
-            next(error);
         }
-    }
-);
-
-// POST /api/v1/vendors/2fa/disable
-router.post(
-    '/2fa/disable',
-    authMiddleware,
-    validateBody(enable2FASchema),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            await authService.disable2FA(req.user!.userId, req.body.password);
-
-            res.json({
-                message: 'Two-factor authentication disabled',
-            });
-        } catch (error: any) {
-            if (error.message.includes('Invalid')) {
-                res.status(400).json({
-                    error: 'Bad Request',
-                    message: error.message,
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-);
-
-// POST /api/v1/vendors/verify-2fa
-router.post(
-    '/verify-2fa',
-    authLimiter,
-    validateBody(verify2FASchema),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            // This endpoint is for verifying 2FA during login
-            // The login endpoint returns requiresTwoFactor: true
-            // Frontend then calls this endpoint with the 2FA code
-            const { email, password, code } = req.body;
-
-            const result = await authService.login(
-                { email, password, twoFactorCode: code, rememberMe: false },
-                req.ip
-            );
-
-            res.json({
-                message: 'Login successful',
-                user: result.user,
-                vendor: result.vendor,
-                accessToken: result.accessToken,
-                refreshToken: result.refreshToken,
-            });
-        } catch (error: any) {
-            res.status(401).json({
-                error: 'Unauthorized',
-                message: error.message,
-            });
-        }
-    }
-);
-
-export default router;
+    );
+}

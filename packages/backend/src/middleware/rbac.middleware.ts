@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { FastifyRequest, FastifyReply } from 'fastify';
 import { UserRole } from '../types/index.js';
 
 // Role hierarchy: owner > admin > staff > readonly
@@ -76,34 +76,32 @@ export function hasRole(userRole: UserRole, requiredRole: UserRole): boolean {
     return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
 }
 
-// Middleware factory for role-based access
+// Middleware factory for role-based access (Fastify preHandler hook)
 export function requireRole(minRole: UserRole) {
-    return (req: Request, res: Response, next: NextFunction): void => {
-        if (!req.user) {
-            res.status(401).json({
+    return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+        if (!request.user) {
+            reply.status(401).send({
                 error: 'Unauthorized',
                 message: 'Authentication required',
             });
             return;
         }
 
-        if (!hasRole(req.user.role, minRole)) {
-            res.status(403).json({
+        if (!hasRole(request.user.role, minRole)) {
+            reply.status(403).send({
                 error: 'Forbidden',
                 message: `This action requires at least ${minRole} role`,
             });
             return;
         }
-
-        next();
     };
 }
 
-// Middleware factory for permission-based access
+// Middleware factory for permission-based access (Fastify preHandler hook)
 export function requirePermission(...permissions: Permission[]) {
-    return (req: Request, res: Response, next: NextFunction): void => {
-        if (!req.user) {
-            res.status(401).json({
+    return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+        if (!request.user) {
+            reply.status(401).send({
                 error: 'Unauthorized',
                 message: 'Authentication required',
             });
@@ -111,48 +109,44 @@ export function requirePermission(...permissions: Permission[]) {
         }
 
         const hasAllPermissions = permissions.every((permission) =>
-            hasPermission(req.user!.role, permission)
+            hasPermission(request.user!.role, permission)
         );
 
         if (!hasAllPermissions) {
-            res.status(403).json({
+            reply.status(403).send({
                 error: 'Forbidden',
                 message: 'You do not have permission to perform this action',
                 requiredPermissions: permissions,
             });
             return;
         }
-
-        next();
     };
 }
 
 // Middleware to ensure user can only access their own vendor's data
-export function requireVendorAccess(req: Request, res: Response, next: NextFunction): void {
-    if (!req.user) {
-        res.status(401).json({
+export async function requireVendorAccess(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    if (!request.user) {
+        reply.status(401).send({
             error: 'Unauthorized',
             message: 'Authentication required',
         });
         return;
     }
 
-    const vendorId = req.params.vendorId || req.vendorId;
+    const params = request.params as Record<string, string>;
+    const vendorId = params.vendorId || request.vendorId;
 
     if (!vendorId) {
-        next();
         return;
     }
 
-    if (req.user.vendorId !== vendorId) {
-        res.status(403).json({
+    if (request.user.vendorId !== vendorId) {
+        reply.status(403).send({
             error: 'Forbidden',
             message: 'You can only access your own vendor data',
         });
         return;
     }
-
-    next();
 }
 
 export default {

@@ -2,9 +2,10 @@
 // Mirrors the existing SQL migrations (001–011)
 
 generator client {
-  provider   = "prisma-client-js"
-  engineType = "library"
-  output     = "../src/generated/client"
+  provider      = "prisma-client-js"
+  engineType    = "library"
+  output        = "../src/generated/client"
+  binaryTargets = ["native", "windows"]
 }
 
 datasource db {

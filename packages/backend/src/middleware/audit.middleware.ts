@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { FastifyRequest, FastifyReply } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '../config/prisma.js';
 import { logger } from '../utils/logger.js';
@@ -13,21 +13,19 @@ interface AuditContext {
     description?: string;
 }
 
-// Extend Express Request to include audit context
-declare global {
-    namespace Express {
-        interface Request {
-            auditContext?: AuditContext;
-            requestId?: string;
-        }
+// Extend Fastify Request to include audit context
+declare module 'fastify' {
+    interface FastifyRequest {
+        auditContext?: AuditContext;
+        requestId?: string;
     }
 }
 
 // Add request ID to every request
-export function requestIdMiddleware(req: Request, res: Response, next: NextFunction): void {
-    req.requestId = req.headers['x-request-id'] as string || uuidv4();
-    res.setHeader('X-Request-ID', req.requestId);
-    next();
+export async function requestIdMiddleware(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    // Fastify auto-generates request.id, but we also support X-Request-ID header
+    request.requestId = (request.headers['x-request-id'] as string) || request.id || uuidv4();
+    reply.header('X-Request-ID', request.requestId);
 }
 
 // Create audit log entry
@@ -39,7 +37,7 @@ export async function createAuditLog(
     entityId: string | null,
     oldValue: Record<string, any> | null,
     newValue: Record<string, any> | null,
-    req: Request
+    request: FastifyRequest
 ): Promise<void> {
     try {
         // Calculate changes
@@ -66,9 +64,9 @@ export async function createAuditLog(
                 oldValue: oldValue || undefined,
                 newValue: newValue || undefined,
                 changes: changes || undefined,
-                ipAddress: req.ip || null,
-                userAgent: req.headers['user-agent'] || null,
-                requestId: req.requestId || null,
+                ipAddress: request.ip || null,
+                userAgent: request.headers['user-agent'] || null,
+                requestId: request.requestId || null,
             },
         });
     } catch (error) {
@@ -76,45 +74,34 @@ export async function createAuditLog(
     }
 }
 
-// Middleware that logs after response is sent
-export function auditMiddleware(req: Request, res: Response, next: NextFunction): void {
-    // Store original json method
-    const originalJson = res.json.bind(res);
-
-    // Override json method to capture response
-    res.json = function (body: any) {
-        // Log audit after response
-        if (req.auditContext && req.user) {
-            createAuditLog(
-                req.user.vendorId,
-                req.user.userId,
-                req.auditContext.action,
-                req.auditContext.entityType,
-                req.auditContext.entityId || null,
-                req.auditContext.oldValue || null,
-                req.auditContext.newValue || null,
-                req
-            ).catch((err) => {
-                logger.error('Audit log failed', { error: err });
-            });
-        }
-
-        return originalJson(body);
-    };
-
-    next();
+// Hook that logs after response is sent (onResponse hook)
+export async function auditMiddleware(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    if (request.auditContext && request.user) {
+        createAuditLog(
+            request.user.vendorId,
+            request.user.userId,
+            request.auditContext.action,
+            request.auditContext.entityType,
+            request.auditContext.entityId || null,
+            request.auditContext.oldValue || null,
+            request.auditContext.newValue || null,
+            request
+        ).catch((err) => {
+            logger.error('Audit log failed', { error: err });
+        });
+    }
 }
 
 // Helper to set audit context
 export function setAuditContext(
-    req: Request,
+    request: FastifyRequest,
     action: AuditAction,
     entityType: EntityType,
     entityId?: string,
     oldValue?: Record<string, any>,
     newValue?: Record<string, any>
 ): void {
-    req.auditContext = {
+    request.auditContext = {
         action,
         entityType,
         entityId,

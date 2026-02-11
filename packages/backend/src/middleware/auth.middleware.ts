@@ -1,23 +1,21 @@
-import { Request, Response, NextFunction } from 'express';
+import { FastifyRequest, FastifyReply } from 'fastify';
 import { authService, TokenPayload } from '../services/auth.service.js';
 import { logger } from '../utils/logger.js';
 
-// Extend Express Request type
-declare global {
-    namespace Express {
-        interface Request {
-            user?: TokenPayload;
-            vendorId?: string;
-        }
+// Extend Fastify Request type
+declare module 'fastify' {
+    interface FastifyRequest {
+        user?: TokenPayload;
+        vendorId?: string;
     }
 }
 
-export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function authMiddleware(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
-        const authHeader = req.headers.authorization;
+        const authHeader = request.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            res.status(401).json({
+            reply.status(401).send({
                 error: 'Unauthorized',
                 message: 'No token provided',
             });
@@ -30,20 +28,18 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
             const payload = authService.verifyAccessToken(token);
 
             if (payload.type !== 'access') {
-                res.status(401).json({
+                reply.status(401).send({
                     error: 'Unauthorized',
                     message: 'Invalid token type',
                 });
                 return;
             }
 
-            req.user = payload;
-            req.vendorId = payload.vendorId;
-
-            next();
+            request.user = payload;
+            request.vendorId = payload.vendorId;
         } catch (error: any) {
             if (error.name === 'TokenExpiredError') {
-                res.status(401).json({
+                reply.status(401).send({
                     error: 'Unauthorized',
                     message: 'Token expired',
                     code: 'TOKEN_EXPIRED',
@@ -51,14 +47,14 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
                 return;
             }
 
-            res.status(401).json({
+            reply.status(401).send({
                 error: 'Unauthorized',
                 message: 'Invalid token',
             });
         }
     } catch (error) {
         logger.error('Auth middleware error', { error });
-        res.status(500).json({
+        reply.status(500).send({
             error: 'Internal Server Error',
             message: 'Authentication failed',
         });
@@ -66,12 +62,11 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
 }
 
 // Optional auth - doesn't fail if no token
-export async function optionalAuthMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function optionalAuthMiddleware(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
-        const authHeader = req.headers.authorization;
+        const authHeader = request.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            next();
             return;
         }
 
@@ -79,15 +74,13 @@ export async function optionalAuthMiddleware(req: Request, res: Response, next: 
 
         try {
             const payload = authService.verifyAccessToken(token);
-            req.user = payload;
-            req.vendorId = payload.vendorId;
+            request.user = payload;
+            request.vendorId = payload.vendorId;
         } catch (error) {
             // Ignore token errors for optional auth
         }
-
-        next();
     } catch (error) {
-        next();
+        // Ignore errors for optional auth
     }
 }
 

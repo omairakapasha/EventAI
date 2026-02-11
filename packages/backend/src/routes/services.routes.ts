@@ -1,170 +1,139 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { serviceService } from '../services/service.service.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { requirePermission } from '../middleware/rbac.middleware.js';
 import { validateBody, validateQuery } from '../middleware/validation.middleware.js';
 import { createServiceSchema, updateServiceSchema, serviceQuerySchema } from '../schemas/index.js';
 
-const router: Router = Router();
+export default async function servicesRoutes(fastify: FastifyInstance): Promise<void> {
 
-// All routes require authentication
-router.use(authMiddleware);
+    // All routes require authentication
+    fastify.addHook('onRequest', authMiddleware);
 
-// GET /api/v1/vendors/me/services
-router.get(
-    '/',
-    requirePermission('service:read'),
-    validateQuery(serviceQuerySchema),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
+    // GET /
+    fastify.get(
+        '/',
+        { preHandler: [requirePermission('service:read'), validateQuery(serviceQuerySchema)] },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            const query = request.query as any;
             const result = await serviceService.findByVendor({
-                vendorId: req.user!.vendorId,
-                category: req.query.category as any,
-                isActive: req.query.isActive === 'true',
-                search: req.query.search as string,
-                page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
-                limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined,
-                sortBy: req.query.sortBy as string,
-                sortOrder: req.query.sortOrder as 'asc' | 'desc',
+                vendorId: request.user!.vendorId,
+                category: query.category,
+                isActive: query.isActive === 'true',
+                search: query.search,
+                page: query.page ? parseInt(query.page, 10) : undefined,
+                limit: query.limit ? parseInt(query.limit, 10) : undefined,
+                sortBy: query.sortBy,
+                sortOrder: query.sortOrder,
             });
 
-            res.json(result);
-        } catch (error) {
-            next(error);
+            return reply.send(result);
         }
-    }
-);
+    );
 
-// GET /api/v1/vendors/me/services/:id
-router.get(
-    '/:id',
-    requirePermission('service:read'),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const service = await serviceService.findById(req.params.id as string, req.user!.vendorId);
+    // GET /:id
+    fastify.get<{ Params: { id: string } }>(
+        '/:id',
+        { preHandler: [requirePermission('service:read')] },
+        async (request, reply) => {
+            const service = await serviceService.findById(request.params.id, request.user!.vendorId);
 
             if (!service) {
-                res.status(404).json({
+                return reply.status(404).send({
                     error: 'Not Found',
                     message: 'Service not found',
                 });
-                return;
             }
 
-            res.json(service);
-        } catch (error) {
-            next(error);
+            return reply.send(service);
         }
-    }
-);
+    );
 
-// POST /api/v1/vendors/me/services
-router.post(
-    '/',
-    requirePermission('service:write'),
-    validateBody(createServiceSchema),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
+    // POST /
+    fastify.post(
+        '/',
+        { preHandler: [requirePermission('service:write'), validateBody(createServiceSchema)] },
+        async (request: FastifyRequest, reply: FastifyReply) => {
             const service = await serviceService.create(
-                req.user!.vendorId,
-                req.user!.userId,
-                req.body
+                request.user!.vendorId,
+                request.user!.userId,
+                request.body as any
             );
 
-            res.status(201).json(service);
-        } catch (error) {
-            next(error);
+            return reply.status(201).send(service);
         }
-    }
-);
+    );
 
-// PUT /api/v1/vendors/me/services/:id
-router.put(
-    '/:id',
-    requirePermission('service:write'),
-    validateBody(updateServiceSchema),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
+    // PUT /:id
+    fastify.put<{ Params: { id: string } }>(
+        '/:id',
+        { preHandler: [requirePermission('service:write'), validateBody(updateServiceSchema)] },
+        async (request, reply) => {
             const service = await serviceService.update(
-                req.params.id as string,
-                req.user!.vendorId,
-                req.user!.userId,
-                req.body
+                request.params.id,
+                request.user!.vendorId,
+                request.user!.userId,
+                request.body as any
             );
 
             if (!service) {
-                res.status(404).json({
+                return reply.status(404).send({
                     error: 'Not Found',
                     message: 'Service not found',
                 });
-                return;
             }
 
-            res.json(service);
-        } catch (error) {
-            next(error);
+            return reply.send(service);
         }
-    }
-);
+    );
 
-// DELETE /api/v1/vendors/me/services/:id
-router.delete(
-    '/:id',
-    requirePermission('service:delete'),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
+    // DELETE /:id
+    fastify.delete<{ Params: { id: string } }>(
+        '/:id',
+        { preHandler: [requirePermission('service:delete')] },
+        async (request, reply) => {
             await serviceService.delete(
-                req.params.id as string,
-                req.user!.vendorId,
-                req.user!.userId
+                request.params.id,
+                request.user!.vendorId,
+                request.user!.userId
             );
 
-            res.status(204).send();
-        } catch (error) {
-            next(error);
+            return reply.status(204).send();
         }
-    }
-);
+    );
 
-// POST /api/v1/vendors/me/services/import
-router.post(
-    '/import',
-    requirePermission('service:write'),
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const { services } = req.body;
+    // POST /import
+    fastify.post(
+        '/import',
+        { preHandler: [requirePermission('service:write')] },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            const { services } = request.body as any;
 
             if (!Array.isArray(services) || services.length === 0) {
-                res.status(400).json({
+                return reply.status(400).send({
                     error: 'Bad Request',
                     message: 'Services array is required',
                 });
-                return;
             }
 
             if (services.length > 100) {
-                res.status(400).json({
+                return reply.status(400).send({
                     error: 'Bad Request',
                     message: 'Maximum 100 services can be imported at once',
                 });
-                return;
             }
 
             const result = await serviceService.bulkImport(
-                req.user!.vendorId,
-                req.user!.userId,
+                request.user!.vendorId,
+                request.user!.userId,
                 services
             );
 
-            res.status(201).json({
+            return reply.status(201).send({
                 message: `Successfully imported ${result.created} services`,
                 created: result.created,
                 errors: result.errors,
             });
-        } catch (error) {
-            next(error);
         }
-    }
-);
-
-export default router;
+    );
+}
