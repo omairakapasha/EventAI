@@ -4,7 +4,8 @@ from unittest.mock import MagicMock
 
 # Mock Gemini to avoid API keys requirement for testing
 sys.modules['google'] = MagicMock()
-sys.modules['google.generativeai'] = MagicMock()
+sys.modules['google.genai'] = MagicMock()
+sys.modules['google.genai.types'] = MagicMock()
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from nlp_processor.structured_output import EventRequirements
@@ -22,7 +23,11 @@ def test_flow():
     # Re-import to get the real class
     from nlp_processor.intent_extractor import IntentExtractor
     extractor = IntentExtractor()
-    extractor.model = MagicMock()
+    # Create mock client with models.generate_content method
+    mock_client = MagicMock()
+    mock_models = MagicMock()
+    mock_client.models = mock_models
+    extractor.client = mock_client
     
     # Mock the generate_content response
     mock_response = MagicMock()
@@ -36,7 +41,7 @@ def test_flow():
         "preferences": ["outdoor"]
     }
     """
-    extractor.model.generate_content.return_value = mock_response
+    mock_models.generate_content.return_value = mock_response
     
     agent.intent_extractor = extractor
     

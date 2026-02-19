@@ -1,10 +1,23 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Users, Store, DollarSign, Activity, AlertCircle } from "lucide-react";
 import { getStats, getVendors } from "@/lib/api";
 
 export default function Dashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  // Redirect to login if not authenticated (in useEffect to avoid setState during render)
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
   const { data: stats, isLoading: statsLoading, error: statsError } = useQuery({
     queryKey: ["stats"],
     queryFn: getStats,
@@ -15,8 +28,8 @@ export default function Dashboard() {
     queryFn: getVendors,
   });
 
-  if (statsLoading || vendorsLoading) {
-    return <div className="p-8">Loading dashboard data...</div>;
+  if (status === "loading" || status === "unauthenticated" || statsLoading || vendorsLoading) {
+    return <div className="p-8">Loading...</div>;
   }
 
   if (statsError) {

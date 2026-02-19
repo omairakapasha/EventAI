@@ -4,7 +4,10 @@ This module defines all agents using the OpenAI Agent SDK with proper
 tool integration and agent handoffs.
 """
 
-from agents import Agent, Runner, function_tool, handoff
+import asyncio
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from _agents_sdk import Agent, Runner, function_tool, handoff, LitellmModel
 from typing import Dict, Any, Optional
 
 # Import all tools
@@ -40,6 +43,7 @@ from tools import (
 
 triage_agent = Agent(
     name="TriageAgent",
+    model=LitellmModel(model="gemini/gemini-2.0-flash"),
     instructions="""You are the entry point for the Event Orchestrator system.
 
 Your job is to understand the user's request and route it to the appropriate specialized agent.
@@ -67,6 +71,7 @@ Always be helpful and extract as much detail as possible from the user's request
 
 vendor_discovery_agent = Agent(
     name="VendorDiscoveryAgent",
+    model=LitellmModel(model="gemini/gemini-2.0-flash"),
     instructions="""You are an expert at finding and recommending vendors for events in Pakistan.
 
 Your expertise includes:
@@ -101,6 +106,7 @@ Consider Pakistani cultural context (weddings, mehndi, baraat) when making recom
 
 scheduler_agent = Agent(
     name="SchedulerAgent",
+    model=LitellmModel(model="gemini/gemini-2.0-flash"),
     instructions="""You are an expert event scheduler and logistics coordinator.
 
 Your expertise includes:
@@ -138,6 +144,7 @@ Always provide specific times, durations, and vendor coordination points.
 
 approval_agent = Agent(
     name="ApprovalAgent",
+    model=LitellmModel(model="gemini/gemini-2.0-flash"),
     instructions="""You are responsible for managing the approval workflow for event plans.
 
 Your duties include:
@@ -177,6 +184,7 @@ Escalate to higher approval levels when budgets exceed current authority.
 
 mail_agent = Agent(
     name="MailAgent",
+    model=LitellmModel(model="gemini/gemini-2.0-flash"),
     instructions="""You are an expert at managing event communications and guest coordination.
 
 Your expertise includes:
@@ -215,6 +223,7 @@ Consider cultural norms for Pakistani events when crafting messages.
 
 orchestrator_agent = Agent(
     name="OrchestratorAgent",
+    model=LitellmModel(model="gemini/gemini-2.0-flash"),
     instructions="""You are the master orchestrator for the Event Planning system.
 
 Your role is to coordinate the entire event planning workflow by delegating
@@ -248,9 +257,12 @@ Always provide clear summaries of what each agent accomplished.
 )
 
 # Update triage agent to have orchestrator as handoff
-triage_agent = triage_agent.model_copy(update={
-    "handoffs": [vendor_discovery_agent, scheduler_agent, approval_agent, mail_agent, orchestrator_agent]
-})
+triage_agent = triage_agent.clone(
+    handoffs=[vendor_discovery_agent, scheduler_agent, approval_agent, mail_agent, orchestrator_agent]
+)
+
+import nest_asyncio
+nest_asyncio.apply()
 
 # ============================================================================
 # RUNNER FUNCTIONS

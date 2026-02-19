@@ -3,19 +3,22 @@ name = "agentic-event-orchestrator"
 version = "0.1.0"
 description = "AI Agent Orchestrator for Event Management"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
     "pydantic",
     "python-dotenv",
     "requests",
     "chainlit",
     "ortools",
-    "google-generativeai",
+    "google-genai",
     "psycopg2-binary",
     "mcp",
     "fastapi",
     "uvicorn",
-    "openai-agents"
+    "openai-agents",
+    "asyncpg>=0.31.0",
+    "litellm>=1.60.0",
+    "nest-asyncio>=1.6.0",
 ]
 
 [tool.uv]

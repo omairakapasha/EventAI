@@ -1,7 +1,8 @@
 import os
 import json
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from .structured_output import EventRequirements
 
 # Load environment variables from .env file
@@ -12,8 +13,9 @@ class IntentExtractor:
         api_key = api_key or os.getenv("GEMINI_API_KEY")
         if not api_key:
             raise ValueError("GEMINI_API_KEY not found in environment variables. Please set it in your .env file.")
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel(os.getenv("GEMINI_MODEL", "gemini-2.0-flash"))
+        genai_client = genai.Client(api_key=api_key)
+        self.client = genai_client
+        self.model_name = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
     def extract_event_details(self, user_input: str) -> EventRequirements:
         """
@@ -36,7 +38,10 @@ class IntentExtractor:
         """
 
         try:
-            response = self.model.generate_content(prompt)
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt
+            )
             # Clean up response to ensure it's valid JSON
             text = response.text.strip()
             if text.startswith("```json"):

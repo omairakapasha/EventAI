@@ -1,5 +1,4 @@
 from .event_planner_agent import EventPlannerAgent
-from .mail_processing_agent import MailProcessingAgent
 from nlp_processor.intent_extractor import IntentExtractor
 from vendor_integration.vendor_portal_client import VendorPortalClient
 from vendor_integration.api_vendor_handler import ApiVendorHandler
@@ -14,7 +13,7 @@ class OrchestrationAgent:
         manual_handler = ManualVendorHandler()
         
         self.planner = EventPlannerAgent(api_handler, manual_handler)
-        self.mail_agent = MailProcessingAgent()
+        self.mail_agent = None  # MailProcessingAgent removed (legacy)
 
     def process_request(self, user_input: str):
         """
@@ -38,6 +37,6 @@ class OrchestrationAgent:
         # In a real app, we would call client.create_booking() here
         
         print("Sending invitations...")
-        self.mail_agent.send_invitations(plan.dict(), ["guest1@example.com", "guest2@example.com"])
+        # Mail processing is handled by SDK agents (mail_tools)
         
         return "Event successfully booked and invitations sent!"

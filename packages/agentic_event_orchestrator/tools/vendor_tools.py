@@ -4,7 +4,9 @@ These tools provide vendor discovery, availability checking, and pricing functio
 """
 
 from typing import List, Dict, Any, Optional
-from agents import function_tool
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from _agents_sdk import function_tool
 from pydantic import BaseModel, Field
 
 # Import existing vendor integration modules

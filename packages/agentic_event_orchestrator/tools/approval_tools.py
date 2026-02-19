@@ -5,7 +5,9 @@ These tools handle approval requests, notifications, and decision tracking.
 
 from typing import List, Dict, Any, Optional
 from datetime import datetime
-from agents import function_tool
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from _agents_sdk import function_tool
 from pydantic import BaseModel, Field
 
 

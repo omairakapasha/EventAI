@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 import { Providers } from "./providers";
 import { Navbar } from "@/components/navbar";
 import { SocketProvider } from "@/components/socket-provider";
+import { NotificationProvider } from "@/components/notification-provider";
 
 export default function RootLayout({
   children,
@@ -30,13 +31,16 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
+        suppressHydrationWarning
       >
         <Providers>
           <SocketProvider>
-            <Navbar />
-            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-              {children}
-            </main>
+            <NotificationProvider>
+              <Navbar />
+              <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                {children}
+              </main>
+            </NotificationProvider>
           </SocketProvider>
         </Providers>
       </body>

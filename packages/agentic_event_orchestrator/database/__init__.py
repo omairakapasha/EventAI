@@ -38,7 +38,9 @@ class DatabaseConnection:
     """Simple PostgreSQL connection manager"""
     
     def __init__(self):
-        self.connection_string = os.getenv("DATABASE_URL")
+        # Use APP_DATABASE_URL if available (to avoid Chainlit data layer conflicts)
+        # Fall back to DATABASE_URL for backward compatibility
+        self.connection_string = os.getenv("APP_DATABASE_URL") or os.getenv("DATABASE_URL")
         if not self.connection_string:
             # Try individual params
             self.connection_params = {

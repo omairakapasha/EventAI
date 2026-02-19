@@ -5,7 +5,9 @@ These tools handle event scheduling, optimization, and constraint checking.
 
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
-from agents import function_tool
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from _agents_sdk import function_tool
 from pydantic import BaseModel, Field
 
 # Import existing optimizer
@@ -66,7 +68,7 @@ def optimize_schedule(
     start_time: str,
     duration_hours: float,
     attendees: int,
-    selected_vendors: List[Dict[str, Any]]
+    selected_vendors: str
 ) -> OptimizedSchedule:
     """Create an optimized event schedule based on event details and vendors.
     

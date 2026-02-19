@@ -9,7 +9,7 @@ const navigation = [
     { name: "My Events", href: "/", icon: Calendar },
     { name: "Create Event", href: "/create-event", icon: Plus },
     { name: "Marketplace", href: "/marketplace", icon: Store },
-    { name: "Messages", href: "/messages", icon: MessageSquare },
+    { name: "AI Assistant", href: "/chat", icon: MessageSquare },
 ];
 
 export function Navbar() {
