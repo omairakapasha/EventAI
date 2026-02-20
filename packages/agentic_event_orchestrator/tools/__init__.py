@@ -34,6 +34,20 @@ from .approval_tools import (
     get_approval_history,
 )
 
+from .booking_tools import (
+    create_booking,
+    get_my_bookings,
+    cancel_booking,
+    get_booking_details,
+)
+
+from .event_tools import (
+    create_event,
+    list_user_events,
+    get_event_details,
+    update_event_status,
+)
+
 __all__ = [
     # Vendor tools
     "search_vendors",
@@ -58,4 +72,14 @@ __all__ = [
     "notify_stakeholders",
     "record_approval_decision",
     "get_approval_history",
+    # Booking tools
+    "create_booking",
+    "get_my_bookings",
+    "cancel_booking",
+    "get_booking_details",
+    # Event tools
+    "create_event",
+    "list_user_events",
+    "get_event_details",
+    "update_event_status",
 ]

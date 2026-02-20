@@ -35,35 +35,19 @@ from tools import (
     notify_stakeholders,
     record_approval_decision,
     get_approval_history,
+    # Booking tools
+    create_booking,
+    get_my_bookings,
+    cancel_booking,
+    get_booking_details,
+    # Event tools
+    create_event,
+    list_user_events,
+    get_event_details,
+    update_event_status,
 )
 
-# ============================================================================
-# TRIAGE AGENT
-# ============================================================================
-
-triage_agent = Agent(
-    name="TriageAgent",
-    model=LitellmModel(model="gemini/gemini-2.0-flash"),
-    instructions="""You are the entry point for the Event Orchestrator system.
-
-Your job is to understand the user's request and route it to the appropriate specialized agent.
-
-CAPABILITIES:
-- Parse natural language event requests
-- Extract key details: event type, date, location, budget, attendees, preferences
-- Route to the correct specialized agent based on the request type
-
-ROUTING RULES:
-- If the user wants to plan/find vendors/search → handoff to vendor_discovery_agent
-- If the user wants to create/optimize a schedule → handoff to scheduler_agent  
-- If the user has a plan ready and wants approval → handoff to approval_agent
-- If the user wants to send invitations/track RSVPs → handoff to mail_agent
-- For complex multi-step requests → handoff to orchestrator_agent
-
-Always be helpful and extract as much detail as possible from the user's request before routing.
-""",
-    handoffs=[],  # Will be populated after agent definitions
-)
+MODEL = LitellmModel(model="gemini/gemini-2.0-flash")
 
 # ============================================================================
 # VENDOR DISCOVERY AGENT
@@ -71,7 +55,7 @@ Always be helpful and extract as much detail as possible from the user's request
 
 vendor_discovery_agent = Agent(
     name="VendorDiscoveryAgent",
-    model=LitellmModel(model="gemini/gemini-2.0-flash"),
+    model=MODEL,
     instructions="""You are an expert at finding and recommending vendors for events in Pakistan.
 
 Your expertise includes:
@@ -90,6 +74,11 @@ WORKFLOW:
 
 Always provide specific vendor names, pricing in PKR, and explain why each vendor is a good match.
 Consider Pakistani cultural context (weddings, mehndi, baraat) when making recommendations.
+
+Format your responses with markdown:
+- Use **bold** for vendor names and prices
+- Use bullet lists for vendor details
+- Use headers for sections
 """,
     tools=[
         search_vendors,
@@ -106,7 +95,7 @@ Consider Pakistani cultural context (weddings, mehndi, baraat) when making recom
 
 scheduler_agent = Agent(
     name="SchedulerAgent",
-    model=LitellmModel(model="gemini/gemini-2.0-flash"),
+    model=MODEL,
     instructions="""You are an expert event scheduler and logistics coordinator.
 
 Your expertise includes:
@@ -129,6 +118,7 @@ Consider Pakistani event customs:
 - Corporate: Business hours, mid-week preferred
 
 Always provide specific times, durations, and vendor coordination points.
+Format responses with markdown tables and bullet points.
 """,
     tools=[
         optimize_schedule,
@@ -144,7 +134,7 @@ Always provide specific times, durations, and vendor coordination points.
 
 approval_agent = Agent(
     name="ApprovalAgent",
-    model=LitellmModel(model="gemini/gemini-2.0-flash"),
+    model=MODEL,
     instructions="""You are responsible for managing the approval workflow for event plans.
 
 Your duties include:
@@ -167,7 +157,6 @@ APPROVAL LIMITS (PKR):
 - Executive: Unlimited
 
 Always ensure proper approval chain is followed for budget compliance.
-Escalate to higher approval levels when budgets exceed current authority.
 """,
     tools=[
         request_approval,
@@ -184,7 +173,7 @@ Escalate to higher approval levels when budgets exceed current authority.
 
 mail_agent = Agent(
     name="MailAgent",
-    model=LitellmModel(model="gemini/gemini-2.0-flash"),
+    model=MODEL,
     instructions="""You are an expert at managing event communications and guest coordination.
 
 Your expertise includes:
@@ -218,12 +207,89 @@ Consider cultural norms for Pakistani events when crafting messages.
 )
 
 # ============================================================================
+# BOOKING AGENT (NEW)
+# ============================================================================
+
+booking_agent = Agent(
+    name="BookingAgent",
+    model=MODEL,
+    instructions="""You are a booking specialist who helps users create, manage, and track their event bookings.
+
+CAPABILITIES:
+- Create new bookings with vendors for specific services
+- List all existing bookings for a user
+- Show booking details
+- Cancel bookings when requested
+
+WORKFLOW:
+1. When a user wants to book: gather vendor_id, service_id, event_date, and client info
+2. Use create_booking to confirm the booking
+3. When asked about existing bookings: use get_my_bookings with their email
+4. When asked to cancel: use cancel_booking with the booking_id and reason
+5. For details: use get_booking_details
+
+IMPORTANT RULES:
+- Always confirm booking details with the user BEFORE creating
+- Present prices in PKR with proper formatting
+- Show booking confirmation with all relevant details
+- If vendor_id or service_id is missing, ask the user or suggest handoff to VendorDiscoveryAgent
+
+Format responses with markdown — use tables for booking lists and bold for key details.
+""",
+    tools=[
+        create_booking,
+        get_my_bookings,
+        cancel_booking,
+        get_booking_details,
+    ],
+)
+
+# ============================================================================
+# EVENT PLANNER AGENT (NEW)
+# ============================================================================
+
+event_planner_agent = Agent(
+    name="EventPlannerAgent",
+    model=MODEL,
+    instructions="""You are an AI event planner who helps users create and manage their events.
+
+CAPABILITIES:
+- Create new events (weddings, birthdays, corporate, mehndi, conferences, parties)
+- List and track user's events
+- Get event details and status
+- Update event status
+- Coordinate with other agents for vendor discovery and scheduling
+
+WORKFLOW:
+1. Understand what the user wants to plan
+2. Extract: event_type, event_name, event_date, location, attendees, budget, preferences
+3. Use create_event to create the event
+4. After creation, offer to find vendors (handoff to VendorDiscoveryAgent)
+5. Use list_user_events to show existing events
+6. Use update_event_status to progress events through the workflow
+
+SUPPORTED EVENT TYPES:
+- wedding, birthday, corporate, mehndi, conference, party
+
+Always be enthusiastic and helpful. Ask follow-up questions to gather all necessary details.
+Format responses with emojis and markdown for a friendly experience.
+""",
+    tools=[
+        create_event,
+        list_user_events,
+        get_event_details,
+        update_event_status,
+    ],
+    handoffs=[],  # Will be updated below
+)
+
+# ============================================================================
 # ORCHESTRATOR AGENT
 # ============================================================================
 
 orchestrator_agent = Agent(
     name="OrchestratorAgent",
-    model=LitellmModel(model="gemini/gemini-2.0-flash"),
+    model=MODEL,
     instructions="""You are the master orchestrator for the Event Planning system.
 
 Your role is to coordinate the entire event planning workflow by delegating
@@ -231,10 +297,12 @@ to specialized agents and ensuring all steps are completed successfully.
 
 ORCHESTRATION WORKFLOW:
 1. INTAKE: Understand the complete event requirements from the user
-2. VENDOR DISCOVERY: Handoff to vendor_discovery_agent to find suitable vendors
-3. SCHEDULING: Handoff to scheduler_agent to create optimal schedule
-4. APPROVAL: Handoff to approval_agent to get plan approval
-5. COMMUNICATION: Handoff to mail_agent to handle invitations
+2. EVENT CREATION: Handoff to event_planner_agent to create the event
+3. VENDOR DISCOVERY: Handoff to vendor_discovery_agent to find suitable vendors
+4. SCHEDULING: Handoff to scheduler_agent to create optimal schedule
+5. BOOKING: Handoff to booking_agent to book selected vendors
+6. APPROVAL: Handoff to approval_agent to get plan approval
+7. COMMUNICATION: Handoff to mail_agent to handle invitations
 
 DELEGATION GUIDELINES:
 - Always use handoffs to specialized agents for their domain
@@ -244,21 +312,76 @@ DELEGATION GUIDELINES:
 - If an agent needs more information, ask the user
 
 When given a complex request, break it down and delegate to the appropriate
-specialized agent. Don't try to do everything yourself - use the handoffs.
+specialized agent. Don't try to do everything yourself — use the handoffs.
 
 Always provide clear summaries of what each agent accomplished.
 """,
     handoffs=[
+        event_planner_agent,
         vendor_discovery_agent,
         scheduler_agent,
+        booking_agent,
         approval_agent,
         mail_agent,
     ],
 )
 
-# Update triage agent to have orchestrator as handoff
-triage_agent = triage_agent.clone(
-    handoffs=[vendor_discovery_agent, scheduler_agent, approval_agent, mail_agent, orchestrator_agent]
+# Update event_planner_agent handoffs
+event_planner_agent = event_planner_agent.clone(
+    handoffs=[vendor_discovery_agent, scheduler_agent, booking_agent]
+)
+
+# ============================================================================
+# TRIAGE AGENT (Entry Point)
+# ============================================================================
+
+triage_agent = Agent(
+    name="TriageAgent",
+    model=MODEL,
+    instructions="""You are the friendly entry point for the Event-AI platform chatbot.
+
+Your job is to understand the user's request and route it to the appropriate specialized agent.
+You should be warm, helpful, and conversational.
+
+ROUTING RULES:
+- "plan an event" / "create event" / "organize" → handoff to event_planner_agent
+- "find vendors" / "search vendors" / "recommend" → handoff to vendor_discovery_agent
+- "book" / "reserve" / "make a booking" → handoff to booking_agent
+- "schedule" / "timeline" / "when should" → handoff to scheduler_agent
+- "approve" / "approval" → handoff to approval_agent
+- "invite" / "invitation" / "RSVP" / "send" → handoff to mail_agent
+- "my bookings" / "my events" / "show bookings" → handoff to booking_agent
+- Complex multi-step requests → handoff to orchestrator_agent
+
+CONVERSATION GUIDELINES:
+- Be warm and friendly — use emojis sparingly for a premium feel
+- If the user just says "hi" or greets you, introduce yourself and list what you can do
+- Always extract as much detail as possible before routing
+- If unclear, ask a clarifying question rather than guessing
+- Remember context from the conversation
+
+INTRODUCTION (use when user first messages or says hi):
+"Welcome to **Event-AI** 🎉
+
+I'm your AI-powered event planning assistant. Here's what I can help you with:
+
+• 📋 **Plan Events** — Create and manage weddings, birthdays, corporate events
+• 🔍 **Find Vendors** — Search top-rated vendors in Pakistan
+• 📅 **Book Services** — Reserve vendors for your event dates
+• 📊 **Track Bookings** — View and manage your existing bookings
+• ⚡ **Smart Scheduling** — Get AI-optimized event timelines
+
+What would you like to do today?"
+""",
+    handoffs=[
+        event_planner_agent,
+        vendor_discovery_agent,
+        booking_agent,
+        scheduler_agent,
+        approval_agent,
+        mail_agent,
+        orchestrator_agent,
+    ],
 )
 
 import nest_asyncio
@@ -321,6 +444,16 @@ def run_orchestration(user_input: str) -> Any:
     return Runner.run_sync(orchestrator_agent, user_input)
 
 
+def run_booking(user_input: str) -> Any:
+    """Run the booking agent."""
+    return Runner.run_sync(booking_agent, user_input)
+
+
+def run_event_planning(user_input: str) -> Any:
+    """Run the event planner agent."""
+    return Runner.run_sync(event_planner_agent, user_input)
+
+
 # ============================================================================
 # EXPORTS
 # ============================================================================
@@ -332,6 +465,8 @@ __all__ = [
     "scheduler_agent",
     "approval_agent",
     "mail_agent",
+    "booking_agent",
+    "event_planner_agent",
     "orchestrator_agent",
     # Runner functions
     "run_triage",
@@ -340,4 +475,6 @@ __all__ = [
     "run_approval",
     "run_mail",
     "run_orchestration",
+    "run_booking",
+    "run_event_planning",
 ]

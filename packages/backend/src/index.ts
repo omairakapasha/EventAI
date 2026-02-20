@@ -21,6 +21,9 @@ import adminRoutes from './routes/admin.routes.js';
 import vendorRoutes from './routes/vendor.routes.js';
 import messagesRoutes from './routes/messages.routes.js';
 import aiRoutes from './routes/ai.routes.js';
+import bookingsRoutes from './routes/bookings.routes.js';
+import eventsRoutes from './routes/events.routes.js';
+import publicVendorRoutes from './routes/public-vendors.routes.js';
 
 const app = Fastify({
     logger: false, // We use Winston for logging
@@ -136,6 +139,15 @@ const startServer = async () => {
 
     // AI Agent routes
     await app.register(aiRoutes, { prefix: `${API_PREFIX}/ai` });
+
+    // Bookings routes (agent + user)
+    await app.register(bookingsRoutes, { prefix: `${API_PREFIX}/bookings` });
+
+    // Events routes (agent + user)
+    await app.register(eventsRoutes, { prefix: `${API_PREFIX}/events` });
+
+    // Public vendor routes (no auth, used by chatbot)
+    await app.register(publicVendorRoutes, { prefix: `${API_PREFIX}/vendors/public` });
 
     // 404 handler
     app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) => {
