@@ -24,7 +24,7 @@ else:
     _local_agents = None
 
 # Import from site-packages
-from agents import Agent, Runner, function_tool, handoff  # noqa: E402
+from agents import Agent, Runner, function_tool, handoff, AsyncOpenAI, OpenAIChatCompletionsModel  # noqa: E402
 from agents.extensions.models.litellm_model import LitellmModel  # noqa: E402
 
 # Restore sys.path and modules
@@ -33,4 +33,4 @@ if _local_agents is not None:
     sys.modules['agents'] = _local_agents
 
 # Re-export
-__all__ = ['Agent', 'Runner', 'function_tool', 'handoff', 'LitellmModel']
+__all__ = ['Agent', 'Runner', 'function_tool', 'handoff', 'LitellmModel', 'AsyncOpenAI', 'OpenAIChatCompletionsModel']

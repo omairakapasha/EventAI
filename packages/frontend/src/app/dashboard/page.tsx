@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -17,9 +17,11 @@ import {
     Package,
     Bell,
     Menu,
+    Loader2,
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { cn, formatCurrency, tierColors, getInitials } from '@/lib/utils';
+import { api } from '@/lib/api';
 
 const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -31,38 +33,73 @@ const navItems = [
     { href: '/profile', icon: Settings, label: 'Profile' },
 ];
 
-// Mock data for dashboard
-const stats = [
-    { label: 'Total Bookings', value: '24', change: '+12%', icon: Calendar },
-    { label: 'Revenue (MTD)', value: '$12,450', change: '+8.2%', icon: TrendingUp },
-    { label: 'Active Services', value: '8', change: '0%', icon: Package },
-    { label: 'Client Inquiries', value: '15', change: '+25%', icon: Users },
-];
+interface DashboardStats {
+    totalServices: number;
+    activeServices: number;
+    totalBookings: number;
+    pendingBookings: number;
+}
 
-const recentBookings = [
-    { id: 1, event: 'Johnson Wedding', date: '2026-01-20', status: 'confirmed', amount: 2500 },
-    { id: 2, event: 'Tech Conference', date: '2026-01-25', status: 'pending', amount: 5000 },
-    { id: 3, event: 'Birthday Party', date: '2026-02-01', status: 'confirmed', amount: 800 },
-];
+interface RecentBooking {
+    id: string;
+    eventDate: string;
+    status: string;
+    totalAmount: number | null;
+    vendor?: { name: string };
+    service?: { name: string };
+}
+
 
 export default function DashboardPage() {
     const router = useRouter();
     const { user, vendor, isAuthenticated, logout, fetchProfile } = useAuthStore();
+    const [dashStats, setDashStats] = useState<DashboardStats>({ totalServices: 0, activeServices: 0, totalBookings: 0, pendingBookings: 0 });
+    const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
+    const [loadingDash, setLoadingDash] = useState(true);
+    const [hasMounted, setHasMounted] = useState(false);
+
+    // Prevent hydration mismatch — wait for client mount before reading auth state
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
 
     useEffect(() => {
+        if (!hasMounted) return;
         if (!isAuthenticated) {
             router.push('/login');
             return;
         }
         fetchProfile();
-    }, [isAuthenticated, router, fetchProfile]);
+
+        // Fetch dashboard stats from API
+        const fetchDashboard = async () => {
+            try {
+                const response = await api.get('/vendors/me/dashboard');
+                setDashStats(response.data.stats || { totalServices: 0, activeServices: 0, totalBookings: 0, pendingBookings: 0 });
+                setRecentBookings(response.data.recentActivity || []);
+            } catch (err) {
+                console.error('Failed to fetch dashboard:', err);
+            } finally {
+                setLoadingDash(false);
+            }
+        };
+        fetchDashboard();
+    }, [hasMounted, isAuthenticated, router, fetchProfile]);
 
     const handleLogout = async () => {
         await logout();
         router.push('/login');
     };
 
-    if (!isAuthenticated || !vendor) {
+    const stats = [
+        { label: 'Total Bookings', value: String(dashStats.totalBookings), icon: Calendar },
+        { label: 'Pending', value: String(dashStats.pendingBookings), icon: TrendingUp },
+        { label: 'Active Services', value: String(dashStats.activeServices), icon: Package },
+        { label: 'Total Services', value: String(dashStats.totalServices), icon: Users },
+    ];
+
+    // Show loading spinner until mounted + auth checked
+    if (!hasMounted || !isAuthenticated || !vendor) {
         return (
             <div className="flex min-h-screen items-center justify-center">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
@@ -160,14 +197,6 @@ export default function DashboardPage() {
                                 <div className="rounded-lg bg-primary-50 p-2.5 dark:bg-primary-900/20">
                                     <stat.icon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                                 </div>
-                                <span className={cn(
-                                    'text-sm font-medium',
-                                    stat.change.startsWith('+')
-                                        ? 'text-success-600 dark:text-success-400'
-                                        : 'text-surface-500'
-                                )}>
-                                    {stat.change}
-                                </span>
                             </div>
                             <div className="mt-4">
                                 <p className="text-2xl font-bold text-surface-900 dark:text-surface-50">{stat.value}</p>
@@ -206,8 +235,8 @@ export default function DashboardPage() {
                                 <tbody>
                                     {recentBookings.map((booking) => (
                                         <tr key={booking.id} className="table-row-hover">
-                                            <td className="table-cell font-medium">{booking.event}</td>
-                                            <td className="table-cell">{booking.date}</td>
+                                            <td className="table-cell font-medium">{booking.service?.name || 'N/A'}</td>
+                                            <td className="table-cell">{booking.eventDate ? new Date(booking.eventDate).toLocaleDateString() : 'N/A'}</td>
                                             <td className="table-cell">
                                                 <span className={cn(
                                                     'badge',
@@ -217,7 +246,7 @@ export default function DashboardPage() {
                                                 </span>
                                             </td>
                                             <td className="table-cell text-right font-medium">
-                                                {formatCurrency(booking.amount)}
+                                                {booking.totalAmount ? formatCurrency(Number(booking.totalAmount)) : 'N/A'}
                                             </td>
                                         </tr>
                                     ))}

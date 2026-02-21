@@ -123,21 +123,22 @@ class AuthService {
                     firstName: input.firstName,
                     lastName: input.lastName,
                     role: 'owner',
+                    emailVerified: true, // Auto-verify (no email service configured)
                     emailVerificationToken,
                     emailVerificationExpires,
                 },
             });
 
             // Send verification email
-        try {
-            await emailService.sendVerificationEmail(input.email, emailVerificationToken);
-            logger.info('Verification email sent', { email: input.email });
-        } catch (error) {
-            logger.error('Failed to send verification email', { error, email: input.email });
-            // Don't throw - registration is still successful
-        }
+            try {
+                await emailService.sendVerificationEmail(input.email, emailVerificationToken);
+                logger.info('Verification email sent', { email: input.email });
+            } catch (error) {
+                logger.error('Failed to send verification email', { error, email: input.email });
+                // Don't throw - registration is still successful
+            }
 
-        logger.info('Vendor registered', { vendorId: vendor.id, email: input.email });
+            logger.info('Vendor registered', { vendorId: vendor.id, email: input.email });
 
             return { vendor, user };
         });

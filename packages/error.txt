@@ -1,0 +1,2 @@
+2026-02-20 05:24:48 [[33mwarn[39m]: Email service not configured - emails will be logged only {"service":"vendor-management"}
+2026-02-20 05:24:48 [[31merror[39m]: Failed to start server {"service":"vendor-management","error":{"code":"FST_ERR_DUPLICATED_ROUTE","name":"FastifyError","statusCode":500,"message":"Method 'GET' already declared for route '/api/v1/vendors/public/:id'"}}

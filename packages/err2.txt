@@ -1,0 +1,4 @@
+2026-02-20 05:27:04 [[33mwarn[39m]: Email service not configured - emails will be logged only {"service":"vendor-management"}
+prisma:info Starting a postgresql pool with 33 connections.
+2026-02-20 05:27:05 [[31merror[39m]: Failed to connect to database {"service":"vendor-management","error":{"clientVersion":"6.19.2","errorCode":"P1001","name":"PrismaClientInitializationError"}}
+2026-02-20 05:27:05 [[31merror[39m]: Failed to start server {"service":"vendor-management","error":{"clientVersion":"6.19.2","errorCode":"P1001","name":"PrismaClientInitializationError"}}

@@ -81,7 +81,7 @@ export const useAuthStore = create<AuthState>()(
             login: async (email: string, password: string) => {
                 set({ isLoading: true, error: null });
                 try {
-                    const response = await api.post('/vendors/login', { email, password });
+                    const response = await api.post('/auth/login', { email, password });
 
                     if (response.data.requiresTwoFactor) {
                         set({
@@ -126,7 +126,7 @@ export const useAuthStore = create<AuthState>()(
 
                 set({ isLoading: true, error: null });
                 try {
-                    const response = await api.post('/vendors/login', {
+                    const response = await api.post('/auth/login', {
                         email: pendingEmail,
                         password: pendingPassword,
                         twoFactorCode: code,
@@ -159,7 +159,7 @@ export const useAuthStore = create<AuthState>()(
             register: async (data: RegisterData) => {
                 set({ isLoading: true, error: null });
                 try {
-                    await api.post('/vendors/register', data);
+                    await api.post('/auth/register', data);
                     set({ isLoading: false });
                     return true;
                 } catch (error) {
@@ -173,7 +173,7 @@ export const useAuthStore = create<AuthState>()(
 
             logout: async () => {
                 try {
-                    await api.post('/vendors/logout');
+                    await api.post('/auth/logout');
                 } catch (error) {
                     // Ignore logout errors
                 } finally {

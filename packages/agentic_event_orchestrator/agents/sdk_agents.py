@@ -6,8 +6,19 @@ tool integration and agent handoffs.
 
 import asyncio
 import sys, os
+
+# Load .env FIRST before anything else
+from dotenv import load_dotenv
+_env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+load_dotenv(_env_path, override=True)
+
+# CRITICAL: Remove dummy OpenAI key — the SDK sends it to OpenAI and gets 401
+if os.environ.get("OPENAI_API_KEY", "").startswith("sk-dummy"):
+    os.environ.pop("OPENAI_API_KEY", None)
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from _agents_sdk import Agent, Runner, function_tool, handoff, LitellmModel
+
+from _agents_sdk import Agent, Runner, function_tool, handoff, AsyncOpenAI, OpenAIChatCompletionsModel
 from typing import Dict, Any, Optional
 
 # Import all tools
@@ -47,7 +58,16 @@ from tools import (
     update_event_status,
 )
 
-MODEL = LitellmModel(model="gemini/gemini-2.0-flash")
+# Gemini via OpenAI-compatible endpoint (reference: https://ai.google.dev/gemini-api/docs/openai)
+gemini_api_key = os.environ.get("GEMINI_API_KEY", "")
+external_client = AsyncOpenAI(
+    api_key=gemini_api_key,
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+)
+MODEL = OpenAIChatCompletionsModel(
+    model="gemini-2.5-flash",
+    openai_client=external_client,
+)
 
 # ============================================================================
 # VENDOR DISCOVERY AGENT

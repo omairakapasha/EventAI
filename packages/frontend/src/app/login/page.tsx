@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -21,7 +21,12 @@ export default function LoginPage() {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [twoFactorCode, setTwoFactorCode] = useState('');
+    const [hasMounted, setHasMounted] = useState(false);
     const { login, verify2FA, requiresTwoFactor, isLoading, error, clearError } = useAuthStore();
+
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
 
     const {
         register,
@@ -47,6 +52,14 @@ export default function LoginPage() {
             router.push('/dashboard');
         }
     };
+
+    if (!hasMounted) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
+            </div>
+        );
+    }
 
     if (requiresTwoFactor) {
         return (

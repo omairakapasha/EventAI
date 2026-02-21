@@ -19,7 +19,7 @@ export default async function servicesRoutes(fastify: FastifyInstance): Promise<
             const result = await serviceService.findByVendor({
                 vendorId: request.user!.vendorId,
                 category: query.category,
-                isActive: query.isActive === 'true',
+                isActive: query.isActive !== undefined ? query.isActive === 'true' : undefined,
                 search: query.search,
                 page: query.page ? parseInt(query.page, 10) : undefined,
                 limit: query.limit ? parseInt(query.limit, 10) : undefined,

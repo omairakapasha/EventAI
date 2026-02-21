@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import {
@@ -15,6 +16,7 @@ import {
     Filter
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/lib/auth-store";
 
 interface AvailabilityEntry {
     id?: string;
@@ -49,10 +51,23 @@ const STATUS_LABELS = {
 };
 
 export default function AvailabilityPage() {
+    const router = useRouter();
+    const { isAuthenticated } = useAuthStore();
     const queryClient = useQueryClient();
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [filterService, setFilterService] = useState<string>("");
+    const [hasMounted, setHasMounted] = useState(false);
+
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (hasMounted && !isAuthenticated) {
+            router.push('/login');
+        }
+    }, [hasMounted, isAuthenticated, router]);
 
     // Get date range for current month view
     const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);

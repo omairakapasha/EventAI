@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { useAuthStore } from "@/lib/auth-store";
 import {
     Upload,
     DollarSign,
@@ -44,35 +46,49 @@ interface PriceRecord {
 }
 
 export default function PricingPage() {
+    const router = useRouter();
+    const { isAuthenticated } = useAuthStore();
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<"upload" | "history">("upload");
     const [uploadData, setUploadData] = useState<PriceRecord[]>([]);
     const [isDragging, setIsDragging] = useState(false);
+    const [hasMounted, setHasMounted] = useState(false);
 
-    // Fetch services for dropdown
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (hasMounted && !isAuthenticated) {
+            router.push('/login');
+        }
+    }, [hasMounted, isAuthenticated, router]);
+
+    // Fetch services for dropdown — must be BEFORE any early return
     const { data: services, isLoading: servicesLoading } = useQuery({
         queryKey: ["services"],
         queryFn: async () => {
             const response = await api.get("/vendors/me/services");
             return response.data?.data || [];
         },
+        enabled: hasMounted && isAuthenticated,
     });
 
     // Fetch upload history
     const { data: uploads, isLoading: uploadsLoading } = useQuery({
         queryKey: ["price-uploads"],
         queryFn: async () => {
-            const response = await api.get("/vendors/me/pricing/uploads");
+            const response = await api.get("/vendors/me/pricing/history");
             return response.data?.data || [];
         },
-        enabled: activeTab === "history",
+        enabled: hasMounted && isAuthenticated && activeTab === "history",
     });
 
     // Bulk upload mutation
     const uploadMutation = useMutation({
         mutationFn: async (records: PriceRecord[]) => {
-            const response = await api.post("/vendors/me/pricing/bulk-upload", {
-                records,
+            const response = await api.post("/vendors/me/pricing/bulk", {
+                prices: records,
             });
             return response.data;
         },
@@ -82,6 +98,14 @@ export default function PricingPage() {
             setActiveTab("history");
         },
     });
+
+    if (!hasMounted || !isAuthenticated) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+            </div>
+        );
+    }
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];

@@ -3,30 +3,45 @@ import { config } from './env.js';
 import { logger } from '../utils/logger.js';
 
 let redisClient: RedisClientType | null = null;
+let redisAvailable = false;
+let redisAttempted = false;
 
-export async function getRedisClient(): Promise<RedisClientType> {
-    if (redisClient) {
+export async function getRedisClient(): Promise<RedisClientType | null> {
+    // If we already have a working connection, return it
+    if (redisClient && redisAvailable) {
         return redisClient;
     }
 
-    redisClient = createClient({
-        url: config.redis.url,
-    });
+    // Don't retry if we already failed
+    if (redisAttempted) {
+        return null;
+    }
 
-    redisClient.on('error', (err) => {
-        logger.error('Redis Client Error', { error: err.message });
-    });
+    redisAttempted = true;
 
-    redisClient.on('connect', () => {
+    try {
+        const client = createClient({
+            url: config.redis.url,
+            socket: {
+                connectTimeout: 3000,
+                reconnectStrategy: false, // Don't auto-reconnect
+            },
+        });
+
+        // Suppress error events so they don't crash the process
+        client.on('error', () => { });
+
+        await client.connect();
+        redisClient = client as any;
+        redisAvailable = true;
         logger.info('Connected to Redis');
-    });
-
-    redisClient.on('ready', () => {
-        logger.debug('Redis client ready');
-    });
-
-    await redisClient.connect();
-    return redisClient;
+        return redisClient;
+    } catch (err: any) {
+        logger.warn('Redis not available — running without cache/sessions', { error: err.message });
+        redisAvailable = false;
+        redisClient = null;
+        return null;
+    }
 }
 
 export async function closeRedis(): Promise<void> {
@@ -41,12 +56,14 @@ export async function closeRedis(): Promise<void> {
 export const cache = {
     async get<T>(key: string): Promise<T | null> {
         const client = await getRedisClient();
+        if (!client) return null;
         const value = await client.get(key);
         return value ? JSON.parse(value) : null;
     },
 
     async set(key: string, value: any, ttlSeconds?: number): Promise<void> {
         const client = await getRedisClient();
+        if (!client) return;
         const stringValue = JSON.stringify(value);
 
         if (ttlSeconds) {
@@ -58,11 +75,13 @@ export const cache = {
 
     async del(key: string): Promise<void> {
         const client = await getRedisClient();
+        if (!client) return;
         await client.del(key);
     },
 
     async delPattern(pattern: string): Promise<void> {
         const client = await getRedisClient();
+        if (!client) return;
         const keys = await client.keys(pattern);
 
         if (keys.length > 0) {
@@ -72,21 +91,25 @@ export const cache = {
 
     async exists(key: string): Promise<boolean> {
         const client = await getRedisClient();
+        if (!client) return false;
         return (await client.exists(key)) === 1;
     },
 
     async ttl(key: string): Promise<number> {
         const client = await getRedisClient();
+        if (!client) return -1;
         return client.ttl(key);
     },
 
     async incr(key: string): Promise<number> {
         const client = await getRedisClient();
+        if (!client) return 0;
         return client.incr(key);
     },
 
     async expire(key: string, seconds: number): Promise<void> {
         const client = await getRedisClient();
+        if (!client) return;
         await client.expire(key, seconds);
     },
 };

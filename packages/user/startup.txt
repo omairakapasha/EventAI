@@ -1,0 +1,11 @@
+
+> @event-ai/user@0.1.0 dev
+> next dev -p 3003
+
+??? Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3003
+- Network:       http://172.16.5.190:3003
+- Environments: .env.local
+
+??? Starting...
+??? Ready in 2.2s

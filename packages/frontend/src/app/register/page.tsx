@@ -10,7 +10,7 @@ import { Eye, EyeOff, Mail, Lock, User, Building2, Phone, Globe, Loader2, CheckC
 import { useAuthStore } from '@/lib/auth-store';
 import { cn } from '@/lib/utils';
 
-const registerSchema = z.object({
+const registerBaseSchema = z.object({
     // Step 1: Business Info
     vendorName: z.string().min(2, 'Business name is required'),
     businessType: z.string().optional(),
@@ -29,12 +29,9 @@ const registerSchema = z.object({
         .regex(/[0-9]/, 'Password must contain a number')
         .regex(/[^A-Za-z0-9]/, 'Password must contain a special character'),
     confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
 });
 
-type RegisterForm = z.infer<typeof registerSchema>;
+type RegisterForm = z.infer<typeof registerBaseSchema>;
 
 const businessTypes = [
     'Venue',
@@ -62,8 +59,11 @@ export default function RegisterPage() {
         formState: { errors },
         trigger,
         watch,
+        getValues,
+        clearErrors,
+        setError: setFormError,
     } = useForm<RegisterForm>({
-        resolver: zodResolver(registerSchema),
+        resolver: zodResolver(registerBaseSchema),
         defaultValues: {
             vendorName: '',
             businessType: '',
@@ -88,21 +88,50 @@ export default function RegisterPage() {
         { label: 'Special character', valid: /[^A-Za-z0-9]/.test(password) },
     ];
 
-    const nextStep = async () => {
-        const fieldsToValidate: (keyof RegisterForm)[] =
-            step === 1
-                ? ['vendorName', 'contactEmail']
-                : ['firstName', 'lastName', 'email', 'password', 'confirmPassword'];
+    const nextStep = () => {
+        if (step === 1) {
+            const values = getValues();
+            let hasError = false;
 
-        const valid = await trigger(fieldsToValidate);
-        if (valid) {
-            setStep(step + 1);
+            if (!values.vendorName || values.vendorName.length < 2) {
+                setFormError('vendorName', { message: 'Business name is required' });
+                hasError = true;
+            }
+            if (!values.contactEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.contactEmail)) {
+                setFormError('contactEmail', { message: 'Invalid business email' });
+                hasError = true;
+            }
+
+            if (!hasError) {
+                clearErrors(['vendorName', 'contactEmail']);
+                setStep(2);
+            }
         }
     };
 
     const onSubmit = async (data: RegisterForm) => {
+        // Check password match manually (since we removed .refine())
+        if (data.password !== data.confirmPassword) {
+            setFormError('confirmPassword', { message: 'Passwords do not match' });
+            return;
+        }
         clearError();
-        const success = await registerVendor(data);
+
+        // Strip empty optional fields — backend Zod rejects "" for url/phone validators
+        const payload: any = {
+            vendorName: data.vendorName,
+            contactEmail: data.contactEmail,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            password: data.password,
+            confirmPassword: data.confirmPassword,
+        };
+        if (data.businessType) payload.businessType = data.businessType;
+        if (data.phone) payload.phone = data.phone;
+        if (data.website) payload.website = data.website;
+
+        const success = await registerVendor(payload);
         if (success) {
             setSuccess(true);
         }

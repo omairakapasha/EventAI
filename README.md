@@ -60,7 +60,6 @@ GEMINI_API_KEY=your-gemini-api-key
 **Agentic Orchestrator (`packages/agentic_event_orchestrator/.env`):**
 ```env
 GEMINI_API_KEY=your-gemini-api-key
-OPENAI_API_KEY=sk-dummy-key-for-sdk-compatibility
 APP_DATABASE_URL=postgresql://postgres:your-password@db.your-project.supabase.co:5432/postgres
 BACKEND_API_URL=http://localhost:3001/api/v1
 ```
@@ -179,7 +178,6 @@ NEXTAUTH_URL=http://localhost:3002
 
 Create `packages\agentic_event_orchestrator\.env`:
 ```
-OPENAI_API_KEY=your-openai-api-key-here
 GEMINI_API_KEY=your-gemini-api-key-here
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/event_ai
 VENDOR_PORTAL_API_URL=http://localhost:3001/api/v1

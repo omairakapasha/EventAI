@@ -9,6 +9,11 @@ import { config } from './config/env.js';
 import { healthCheck, connectDatabase, closePool } from './config/database.js';
 import { getRedisClient, closeRedis } from './config/redis.js';
 import { logger } from './utils/logger.js';
+
+// Prevent unhandled rejections (e.g. from Redis) from crashing the process
+process.on('unhandledRejection', (reason: any) => {
+    logger.warn('Unhandled rejection (suppressed)', { error: reason?.message || String(reason) });
+});
 import { requestIdMiddleware, auditMiddleware } from './middleware/audit.middleware.js';
 import { defaultRateLimitConfig } from './middleware/rateLimit.middleware.js';
 
@@ -107,21 +112,24 @@ const startServer = async () => {
 
         try {
             const redis = await getRedisClient();
-            await redis.ping();
-            redisHealthy = true;
+            if (redis) {
+                await redis.ping();
+                redisHealthy = true;
+            }
         } catch (error) {
-            logger.error('Redis health check failed', { error });
+            logger.warn('Redis health check failed (non-critical)', { error });
         }
 
-        const status = dbHealthy && redisHealthy ? 'healthy' : 'unhealthy';
-        const statusCode = status === 'healthy' ? 200 : 503;
+        // Server is healthy as long as DB is up — Redis is optional
+        const status = dbHealthy ? 'healthy' : 'unhealthy';
+        const statusCode = dbHealthy ? 200 : 503;
 
         return reply.status(statusCode).send({
             status,
             timestamp: new Date().toISOString(),
             services: {
                 database: dbHealthy ? 'up' : 'down',
-                redis: redisHealthy ? 'up' : 'down',
+                redis: redisHealthy ? 'up' : 'down (optional)',
             },
         });
     });
@@ -147,7 +155,7 @@ const startServer = async () => {
     await app.register(eventsRoutes, { prefix: `${API_PREFIX}/events` });
 
     // Public vendor routes (no auth, used by chatbot)
-    await app.register(publicVendorRoutes, { prefix: `${API_PREFIX}/vendors/public` });
+    await app.register(publicVendorRoutes, { prefix: `${API_PREFIX}/marketplace` });
 
     // 404 handler
     app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) => {
