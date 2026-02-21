@@ -56,3 +56,6 @@ venv/
 
 # Local portable infrastructure (PostgreSQL, Redis)
 .local/
+
+# Secrets
+packages/db.md
