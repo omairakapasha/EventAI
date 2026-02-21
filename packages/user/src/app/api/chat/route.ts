@@ -19,7 +19,10 @@ export async function POST(request: NextRequest) {
         try {
             const agentResponse = await fetch(`${AGENT_SERVICE_URL}/api/chat`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-API-Key": process.env.AI_SERVICE_API_KEY || ""
+                },
                 body: JSON.stringify({
                     message,
                     session_id: sessionId || undefined,
@@ -61,7 +64,7 @@ export async function POST(request: NextRequest) {
 
         // Call Gemini API as fallback
         const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${geminiApiKey}`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

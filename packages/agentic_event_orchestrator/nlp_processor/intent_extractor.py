@@ -15,7 +15,7 @@ class IntentExtractor:
             raise ValueError("GEMINI_API_KEY not found in environment variables. Please set it in your .env file.")
         genai_client = genai.Client(api_key=api_key)
         self.client = genai_client
-        self.model_name = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+        self.model_name = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
 
     def extract_event_details(self, user_input: str) -> EventRequirements:
         """
