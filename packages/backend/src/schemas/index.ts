@@ -249,6 +249,75 @@ export const createWebhookSchema = z.object({
 
 export const updateWebhookSchema = createWebhookSchema.partial();
 
+// ============ PUBLIC API SCHEMAS ============
+
+// Marketplace / Public Vendors
+export const vendorListQuerySchema = paginationSchema.extend({
+    category: z.string().max(100).optional(),
+    location: z.string().max(100).optional(),
+    search: z.string().max(200).optional(),
+    minRating: z.coerce.number().min(0).max(5).optional(),
+    maxPrice: z.coerce.number().positive().optional(),
+});
+
+// Events
+export const createEventSchema = z.object({
+    eventType: z.string().min(1).max(100),
+    eventName: z.string().max(255).optional(),
+    eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
+    eventTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format (HH:MM)').optional(),
+    eventEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    eventEndTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+    location: z.string().max(255).optional(),
+    clientName: z.string().max(255).optional(),
+    clientEmail: z.string().email().optional(),
+    clientPhone: phoneSchema,
+    attendees: z.coerce.number().int().positive().optional(),
+    budget: z.coerce.number().positive().optional(),
+    preferences: z.array(z.string()).default([]),
+    requirements: z.string().max(5000).optional(),
+});
+
+export const eventListQuerySchema = paginationSchema.extend({
+    email: z.string().email().optional(),
+    status: z.enum(['draft', 'planning', 'quoted', 'approved', 'confirmed', 'completed', 'cancelled']).optional(),
+});
+
+export const updateEventStatusSchema = z.object({
+    status: z.enum(['draft', 'planning', 'quoted', 'approved', 'confirmed', 'completed', 'cancelled']),
+});
+
+// Bookings
+export const createBookingSchema = z.object({
+    vendorId: uuidSchema,
+    serviceId: uuidSchema,
+    eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
+    eventName: z.string().max(255).optional(),
+    clientName: z.string().max(255).optional(),
+    clientEmail: z.string().email().optional(),
+    clientPhone: phoneSchema,
+    guestCount: z.coerce.number().int().positive().optional(),
+    notes: z.string().max(2000).optional(),
+    specialRequirements: z.string().max(2000).optional(),
+});
+
+export const bookingListQuerySchema = paginationSchema.extend({
+    email: z.string().email().optional(),
+    status: z.enum(bookingStatusValues).optional(),
+});
+
+export const cancelBookingSchema = z.object({
+    reason: z.string().max(500).optional(),
+});
+
+// AI Chat
+export const aiChatSchema = z.object({
+    message: z.string().min(1).max(2000),
+    context: z.enum(['planning', 'discovery', 'booking']).optional(),
+    eventId: uuidSchema.optional(),
+    sessionId: z.string().optional(),
+});
+
 // Export types
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -267,3 +336,13 @@ export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;
 export type CreateWebhookInput = z.infer<typeof createWebhookSchema>;
 export type UpdateWebhookInput = z.infer<typeof updateWebhookSchema>;
 export type PaginationInput = z.infer<typeof paginationSchema>;
+
+// Public API types
+export type VendorListQueryInput = z.infer<typeof vendorListQuerySchema>;
+export type CreateEventInput = z.infer<typeof createEventSchema>;
+export type EventListQueryInput = z.infer<typeof eventListQuerySchema>;
+export type UpdateEventStatusInput = z.infer<typeof updateEventStatusSchema>;
+export type CreateBookingInput = z.infer<typeof createBookingSchema>;
+export type BookingListQueryInput = z.infer<typeof bookingListQuerySchema>;
+export type CancelBookingInput = z.infer<typeof cancelBookingSchema>;
+export type AIChatInput = z.infer<typeof aiChatSchema>;

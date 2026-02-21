@@ -4,6 +4,8 @@ These tools enable the chatbot to create, list, cancel, and view bookings
 by calling the backend API.
 """
 
+import logging
+
 from typing import List, Dict, Any, Optional
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -138,7 +140,7 @@ def get_my_bookings(client_email: str) -> List[BookingSummary]:
             return results
         return []
     except Exception as e:
-        print(f"Error fetching bookings: {e}")
+        logging.getLogger("tools.booking").error("Error fetching bookings: %s", e)
         return []
 
 

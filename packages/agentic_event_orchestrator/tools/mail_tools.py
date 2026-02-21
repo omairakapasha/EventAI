@@ -3,6 +3,7 @@
 These tools handle email invitations, RSVP tracking, and guest communication.
 """
 
+import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import sys, os
@@ -71,7 +72,7 @@ def send_invitations(
         # Validate email format (simple check)
         if "@" in email and "." in email:
             sent_count += 1
-            print(f"📧 Invitation sent to {email} for {event_type} on {event_date}")
+            logging.getLogger("tools.mail").info("Invitation sent to %s for %s on %s", email, event_type, event_date)
         else:
             failed.append(email)
     
@@ -206,7 +207,7 @@ def send_reminders(
     for email in guest_emails:
         if "@" in email and "." in email:
             sent_count += 1
-            print(f"🔔 {reminder_type} reminder sent to {email}")
+            logging.getLogger("tools.mail").info("%s reminder sent to %s", reminder_type, email)
         else:
             failed.append(email)
     

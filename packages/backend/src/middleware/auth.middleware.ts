@@ -85,3 +85,51 @@ export async function optionalAuthMiddleware(request: FastifyRequest, reply: Fas
 }
 
 export default authMiddleware;
+
+// New middleware functions for role-based access control
+export function requireRole(allowedRoles: string[]) {
+    return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+        const user = request.user;
+
+        if (!user) {
+            reply.status(401).send({
+                error: 'Unauthorized',
+                message: 'Authentication required',
+            });
+            return;
+        }
+
+        if (!allowedRoles.includes(user.role)) {
+            reply.status(403).send({
+                error: 'Forbidden',
+                message: 'Insufficient permissions',
+            });
+            return;
+        }
+    };
+}
+
+export function requireUserType(allowedTypes: string[]) {
+    return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+        const user = request.user;
+
+        if (!user) {
+            reply.status(401).send({
+                error: 'Unauthorized',
+                message: 'Authentication required',
+            });
+            return;
+        }
+
+        if (!allowedTypes.includes(user.type)) {
+            reply.status(403).send({
+                error: 'Forbidden',
+                message: 'Access denied for this user type',
+            });
+            return;
+        }
+    };
+}
+
+// Export for backward compatibility
+export { authMiddleware as requireAuth };

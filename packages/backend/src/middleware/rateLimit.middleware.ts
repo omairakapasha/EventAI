@@ -63,10 +63,66 @@ export const uploadRateLimitConfig = {
     }),
 };
 
+// Public API rate limits (for marketplace, events, bookings)
+export const publicApiRateLimitConfig = {
+    max: 100,
+    timeWindow: 60 * 1000, // 1 minute
+    keyGenerator: (request: FastifyRequest) => {
+        return request.ip || 'unknown';
+    },
+    errorResponseBuilder: (req: FastifyRequest, context: any) => ({
+        error: 'Rate Limit Exceeded',
+        message: 'Too many requests. Please slow down.',
+        retryAfter: Math.ceil(context.after),
+    }),
+    addHeadersOnExceeding: {
+        'x-ratelimit-limit': true,
+        'x-ratelimit-remaining': true,
+        'x-ratelimit-reset': true,
+    },
+};
+
+// AI service rate limits (more restrictive due to cost)
+export const aiRateLimitConfig = {
+    max: 30,
+    timeWindow: 60 * 1000, // 1 minute
+    keyGenerator: (request: FastifyRequest) => {
+        return request.ip || 'unknown';
+    },
+    errorResponseBuilder: (req: FastifyRequest, context: any) => ({
+        error: 'AI Rate Limit Exceeded',
+        message: 'AI service rate limit reached. Please wait before sending more requests.',
+        retryAfter: Math.ceil(context.after),
+    }),
+    addHeadersOnExceeding: {
+        'x-ratelimit-limit': true,
+        'x-ratelimit-remaining': true,
+        'x-ratelimit-reset': true,
+    },
+};
+
+// Booking creation rate limit (prevent spam)
+export const bookingRateLimitConfig = {
+    max: 10,
+    timeWindow: 60 * 1000, // 1 minute
+    keyGenerator: (request: FastifyRequest) => {
+        const body = request.body as any;
+        return body?.clientEmail || request.ip || 'unknown';
+    },
+    errorResponseBuilder: (req: FastifyRequest, context: any) => ({
+        error: 'Booking Rate Limit Exceeded',
+        message: 'Too many booking attempts. Please wait before creating more bookings.',
+        retryAfter: Math.ceil(context.after),
+    }),
+};
+
 export default {
     defaultRateLimitConfig,
     authRateLimitConfig,
     passwordResetRateLimitConfig,
     apiKeyRateLimitConfig,
     uploadRateLimitConfig,
+    publicApiRateLimitConfig,
+    aiRateLimitConfig,
+    bookingRateLimitConfig,
 };

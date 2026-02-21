@@ -382,14 +382,14 @@ class AuthService {
 
         // Send welcome email
         try {
-            const user = await prisma.vendorUser.findUnique({
+            const userDetails = await prisma.vendorUser.findUnique({
                 where: { id: user.id },
                 select: { email: true, firstName: true, lastName: true },
             });
-            if (user) {
+            if (userDetails) {
                 await emailService.sendWelcomeEmail(
-                    user.email,
-                    `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User'
+                    userDetails.email,
+                    `${userDetails.firstName || ''} ${userDetails.lastName || ''}`.trim() || 'User'
                 );
             }
         } catch (error) {

@@ -1,5 +1,9 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { logger } from '../utils/logger.js';
+import { validateBody } from '../middleware/validation.middleware.js';
+import { aiRateLimitConfig } from '../middleware/rateLimit.middleware.js';
+import { aiChatSchema } from '../schemas/index.js';
+import { requireAuth } from '../middleware/auth.middleware.js';
 import axios from 'axios';
 
 // Python service URL (configurable via env var ideally, defaulting to localhost:8000)
@@ -7,17 +11,27 @@ const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://127.0.0.1:8000';
 
 export default async function aiRoutes(fastify: FastifyInstance): Promise<void> {
 
-    // Proxy chat/plan request
+    // Proxy chat/plan request - requires user authentication
     fastify.post(
         '/chat',
-        // { onRequest: [authMiddleware] }, // Uncomment if auth required
+        { 
+            config: { rateLimit: aiRateLimitConfig },
+            preHandler: [requireAuth, validateBody(aiChatSchema)] 
+        },
         async (request: FastifyRequest, reply: FastifyReply) => {
             try {
-                const body = request.body;
+                const body = request.body as any;
+                const userId = request.user?.userId;
 
-                logger.info('Forwarding request to AI service', { url: `${AI_SERVICE_URL}/api/agent/plan` });
+                logger.info('Forwarding request to AI service', { 
+                    url: `${AI_SERVICE_URL}/api/agent/plan`,
+                    userId 
+                });
 
-                const response = await axios.post(`${AI_SERVICE_URL}/api/agent/plan`, body);
+                const response = await axios.post(`${AI_SERVICE_URL}/api/agent/plan`, {
+                    ...body,
+                    userId
+                });
 
                 return reply.send(response.data);
             } catch (error: any) {
@@ -35,17 +49,27 @@ export default async function aiRoutes(fastify: FastifyInstance): Promise<void> 
         }
     );
 
-    // Proxy booking confirmation
+    // Proxy booking confirmation - requires user authentication
     fastify.post(
         '/book',
-        // { onRequest: [authMiddleware] }, // Uncomment if auth required
+        { 
+            config: { rateLimit: aiRateLimitConfig },
+            preHandler: [requireAuth, validateBody(aiChatSchema)] 
+        },
         async (request: FastifyRequest, reply: FastifyReply) => {
             try {
-                const body = request.body;
+                const body = request.body as any;
+                const userId = request.user?.userId;
 
-                logger.info('Forwarding booking to AI service', { url: `${AI_SERVICE_URL}/api/agent/book` });
+                logger.info('Forwarding booking to AI service', { 
+                    url: `${AI_SERVICE_URL}/api/agent/book`,
+                    userId 
+                });
 
-                const response = await axios.post(`${AI_SERVICE_URL}/api/agent/book`, body);
+                const response = await axios.post(`${AI_SERVICE_URL}/api/agent/book`, {
+                    ...body,
+                    userId
+                });
 
                 return reply.send(response.data);
             } catch (error: any) {

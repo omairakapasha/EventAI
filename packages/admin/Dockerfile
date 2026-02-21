@@ -1,27 +1,38 @@
 # ============================================
-# Event-AI Admin Portal Dockerfile
+# Event-AI Admin Portal Dockerfile (Multi-stage)
 # ============================================
 
-FROM node:20-alpine
+# --- Stage 1: Build ---
+FROM node:20-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Install pnpm
 RUN npm install -g pnpm
 
-# Copy package files
-COPY package.json ./
-RUN pnpm install
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile
 
-# Copy source code
 COPY . .
-
-# Build the application
 RUN pnpm run build
 
-# Expose port
+# --- Stage 2: Production ---
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup --system --gid 1001 appgroup && \
+    adduser --system --uid 1001 appuser
+
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+
+USER appuser
+
 EXPOSE 3000
 
-# Start the application
-CMD ["pnpm", "start"]
+ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+
+CMD ["node", "server.js"]

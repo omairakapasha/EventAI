@@ -4,6 +4,8 @@ These tools enable the chatbot to create, list, and manage events
 by calling the backend API.
 """
 
+import logging
+
 from typing import List, Dict, Any, Optional
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -156,7 +158,7 @@ def list_user_events(client_email: str) -> List[EventSummary]:
             return results
         return []
     except Exception as e:
-        print(f"Error fetching events: {e}")
+        logging.getLogger("tools.event").error("Error fetching events: %s", e)
         return []
 
 

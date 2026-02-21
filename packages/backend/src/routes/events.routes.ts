@@ -1,12 +1,32 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { z } from 'zod';
 import { prisma } from '../config/prisma.js';
 import { logger } from '../utils/logger.js';
+import { validateBody, validateQuery, validateParams } from '../middleware/validation.middleware.js';
+import { publicApiRateLimitConfig, bookingRateLimitConfig } from '../middleware/rateLimit.middleware.js';
+import { 
+    createEventSchema, 
+    eventListQuerySchema, 
+    updateEventStatusSchema,
+    uuidSchema 
+} from '../schemas/index.js';
+import { 
+    successResponse, 
+    paginatedResponse, 
+    errorResponse, 
+    ErrorCode, 
+    getStatusCode 
+} from '../utils/response.js';
 
 export default async function eventsRoutes(fastify: FastifyInstance): Promise<void> {
 
     // Create a new event
     fastify.post(
         '/',
+        { 
+            config: { rateLimit: publicApiRateLimitConfig },
+            preHandler: [validateBody(createEventSchema)] 
+        },
         async (request: FastifyRequest, reply: FastifyReply) => {
             try {
                 const {
@@ -55,13 +75,12 @@ export default async function eventsRoutes(fastify: FastifyInstance): Promise<vo
 
                 logger.info('Event created', { eventId: event.id, eventType });
 
-                return reply.status(201).send({
-                    success: true,
-                    event,
-                });
+                return reply.status(201).send(successResponse(event));
             } catch (error: any) {
                 logger.error('Error creating event', { error: error.message });
-                return reply.status(500).send({ error: 'Failed to create event' });
+                return reply.status(getStatusCode(ErrorCode.DATABASE_ERROR)).send(
+                    errorResponse(ErrorCode.DATABASE_ERROR, 'Failed to create event')
+                );
             }
         }
     );
@@ -69,15 +88,19 @@ export default async function eventsRoutes(fastify: FastifyInstance): Promise<vo
     // List events (filter by client_email)
     fastify.get(
         '/',
+        { 
+            config: { rateLimit: publicApiRateLimitConfig },
+            preHandler: [validateQuery(eventListQuerySchema)] 
+        },
         async (request: FastifyRequest, reply: FastifyReply) => {
             try {
-                const { email, status, page = '1', limit = '20' } = request.query as any;
+                const { email, status, page, limit } = request.query as any;
 
                 const where: any = {};
                 if (email) where.clientEmail = email;
                 if (status) where.status = status;
 
-                const skip = (parseInt(page) - 1) * parseInt(limit);
+                const skip = (page - 1) * limit;
 
                 const [events, total] = await Promise.all([
                     prisma.event.findMany({
@@ -92,33 +115,31 @@ export default async function eventsRoutes(fastify: FastifyInstance): Promise<vo
                         },
                         orderBy: { createdAt: 'desc' },
                         skip,
-                        take: parseInt(limit),
+                        take: limit,
                     }),
                     prisma.event.count({ where }),
                 ]);
 
-                return reply.send({
-                    events,
-                    pagination: {
-                        total,
-                        page: parseInt(page),
-                        limit: parseInt(limit),
-                        pages: Math.ceil(total / parseInt(limit)),
-                    },
-                });
+                return reply.send(paginatedResponse(events, total, page, limit));
             } catch (error: any) {
                 logger.error('Error listing events', { error: error.message });
-                return reply.status(500).send({ error: 'Failed to list events' });
+                return reply.status(getStatusCode(ErrorCode.DATABASE_ERROR)).send(
+                    errorResponse(ErrorCode.DATABASE_ERROR, 'Failed to list events')
+                );
             }
         }
     );
 
     // Get event details with linked vendors
-    fastify.get(
+    fastify.get<{ Params: { id: string } }>(
         '/:id',
-        async (request: FastifyRequest, reply: FastifyReply) => {
+        { 
+            config: { rateLimit: publicApiRateLimitConfig },
+            preHandler: [validateParams(z.object({ id: uuidSchema }))] 
+        },
+        async (request, reply) => {
             try {
-                const { id } = request.params as any;
+                const { id } = request.params;
 
                 const event = await prisma.event.findUnique({
                     where: { id },
@@ -144,23 +165,34 @@ export default async function eventsRoutes(fastify: FastifyInstance): Promise<vo
                 });
 
                 if (!event) {
-                    return reply.status(404).send({ error: 'Event not found' });
+                    return reply.status(404).send(
+                        errorResponse(ErrorCode.EVENT_NOT_FOUND, 'Event not found')
+                    );
                 }
 
-                return reply.send({ event });
+                return reply.send(successResponse(event));
             } catch (error: any) {
                 logger.error('Error getting event', { error: error.message });
-                return reply.status(500).send({ error: 'Failed to get event' });
+                return reply.status(getStatusCode(ErrorCode.DATABASE_ERROR)).send(
+                    errorResponse(ErrorCode.DATABASE_ERROR, 'Failed to get event')
+                );
             }
         }
     );
 
     // Update event status  
-    fastify.patch(
+    fastify.patch<{ Params: { id: string } }>(
         '/:id/status',
-        async (request: FastifyRequest, reply: FastifyReply) => {
+        { 
+            config: { rateLimit: publicApiRateLimitConfig },
+            preHandler: [
+                validateParams(z.object({ id: uuidSchema })),
+                validateBody(updateEventStatusSchema)
+            ] 
+        },
+        async (request, reply) => {
             try {
-                const { id } = request.params as any;
+                const { id } = request.params;
                 const { status } = request.body as any;
 
                 const validStatuses = ['draft', 'planning', 'quoted', 'approved', 'confirmed', 'completed', 'cancelled'];
@@ -177,10 +209,12 @@ export default async function eventsRoutes(fastify: FastifyInstance): Promise<vo
 
                 logger.info('Event status updated', { eventId: id, status });
 
-                return reply.send({ success: true, event });
+                return reply.send(successResponse(event));
             } catch (error: any) {
                 logger.error('Error updating event status', { error: error.message });
-                return reply.status(500).send({ error: 'Failed to update event status' });
+                return reply.status(getStatusCode(ErrorCode.DATABASE_ERROR)).send(
+                    errorResponse(ErrorCode.DATABASE_ERROR, 'Failed to update event status')
+                );
             }
         }
     );

@@ -6,6 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import { cn } from "@repo/ui/lib/utils";
+import { createEvent } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 const eventSchema = z.object({
     eventType: z.string().min(1, "Event type is required"),
@@ -19,8 +21,10 @@ const eventSchema = z.object({
 type EventFormValues = z.infer<typeof eventSchema>;
 
 export default function CreateEventPage() {
+    const router = useRouter();
     const [step, setStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const form = useForm<EventFormValues>({
         resolver: zodResolver(eventSchema),
@@ -34,11 +38,34 @@ export default function CreateEventPage() {
 
     const onSubmit = async (data: EventFormValues) => {
         setIsSubmitting(true);
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        console.log("Form submitted:", data);
-        setIsSubmitting(false);
-        alert("Event created successfully! (Mock)");
+        setError(null);
+        
+        try {
+            // Map form data to API format
+            const eventData = {
+                eventType: data.eventType,
+                eventName: `${data.eventType.charAt(0).toUpperCase() + data.eventType.slice(1)} Event`,
+                eventDate: data.date,
+                location: data.location,
+                attendees: data.attendees,
+                budget: data.budget,
+                preferences: data.description ? [data.description] : [],
+            };
+
+            const result = await createEvent(eventData);
+            
+            // Redirect to dashboard or event details
+            if (result?.event?.id) {
+                router.push(`/dashboard?eventId=${result.event.id}`);
+            } else {
+                router.push("/dashboard");
+            }
+        } catch (err: any) {
+            console.error("Failed to create event:", err);
+            setError(err?.response?.data?.error || "Failed to create event. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const nextStep = async () => {
@@ -73,6 +100,13 @@ export default function CreateEventPage() {
                 </div>
 
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    {/* Error Message */}
+                    {error && (
+                        <div className="rounded-md bg-red-50 p-4">
+                            <p className="text-sm text-red-700">{error}</p>
+                        </div>
+                    )}
+
                     {step === 1 && (
                         <div className="space-y-4">
                             <div>

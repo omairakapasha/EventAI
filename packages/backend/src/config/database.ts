@@ -4,6 +4,10 @@ import { logger } from '../utils/logger.js';
 // Re-export the prisma client for convenience
 export { prisma };
 
+// Connection retry configuration
+const MAX_RETRIES = 5;
+const RETRY_DELAY_MS = 1000;
+
 // Health check using Prisma
 export async function healthCheck(): Promise<boolean> {
     try {
@@ -15,14 +19,29 @@ export async function healthCheck(): Promise<boolean> {
     }
 }
 
-// Connect to the database
+// Connect to the database with retry logic
 export async function connectDatabase(): Promise<void> {
-    try {
-        await prisma.$connect();
-        logger.info('Database connected successfully via Prisma');
-    } catch (error) {
-        logger.error('Failed to connect to database', { error });
-        throw error;
+    let retries = 0;
+    
+    while (retries < MAX_RETRIES) {
+        try {
+            await prisma.$connect();
+            logger.info('Database connected successfully via Prisma');
+            return;
+        } catch (error) {
+            retries++;
+            const delay = RETRY_DELAY_MS * Math.pow(2, retries - 1);
+            
+            logger.error(`Failed to connect to database (attempt ${retries}/${MAX_RETRIES})`, { error });
+            
+            if (retries >= MAX_RETRIES) {
+                logger.error('Max database connection retries reached');
+                throw error;
+            }
+            
+            logger.info(`Retrying database connection in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
     }
 }
 

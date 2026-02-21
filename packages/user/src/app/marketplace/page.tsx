@@ -1,15 +1,19 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { getVendors } from "@/lib/api";
 import { Star, MapPin, Loader2 } from "lucide-react";
 import { cn } from "@repo/ui/lib/utils";
 
 export default function MarketplacePage() {
-    const { data: vendors, isLoading } = useQuery({
+    const { data: response, isLoading } = useQuery({
         queryKey: ["vendors"],
-        queryFn: getVendors,
+        queryFn: () => getVendors(),
     });
+
+    // Extract vendors array from response
+    const vendors = response?.vendors || [];
 
     if (isLoading) {
         return (
@@ -37,7 +41,7 @@ export default function MarketplacePage() {
                     <div key={vendor.id} className="group relative bg-white border rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                         <div className="aspect-w-3 aspect-h-2 bg-gray-200 group-hover:opacity-75 h-48 overflow-hidden">
                             <img
-                                src={vendor.image}
+                                src={vendor.logoUrl || "/placeholder-vendor.jpg"}
                                 alt={vendor.name}
                                 className="h-full w-full object-cover object-center"
                             />
@@ -46,19 +50,34 @@ export default function MarketplacePage() {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="text-lg font-medium text-gray-900">
-                                        <a href="#">
+                                        <Link href={`/marketplace/${vendor.id}`}>
                                             <span aria-hidden="true" className="absolute inset-0" />
                                             {vendor.name}
-                                        </a>
+                                        </Link>
                                     </h3>
-                                    <p className="mt-1 text-sm text-gray-500">{vendor.category}</p>
+                                    <p className="mt-1 text-sm text-gray-500">{vendor.category || vendor.businessType}</p>
                                 </div>
-                                <p className="text-sm font-medium text-gray-900">{vendor.price}</p>
+                                <p className="text-sm font-medium text-gray-900">
+                                    {vendor.pricingMin && vendor.pricingMax 
+                                        ? `PKR ${vendor.pricingMin} - ${vendor.pricingMax}`
+                                        : vendor.pricingMin 
+                                            ? `From PKR ${vendor.pricingMin}`
+                                            : "Contact for pricing"}
+                                </p>
                             </div>
                             <div className="mt-2 flex items-center">
                                 <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                                <span className="ml-1 text-sm text-gray-500">{vendor.rating}</span>
+                                <span className="ml-1 text-sm text-gray-500">
+                                    {vendor.rating ? Number(vendor.rating).toFixed(1) : "New"} 
+                                    {vendor.totalReviews ? `(${vendor.totalReviews})` : ""}
+                                </span>
                             </div>
+                            {vendor.serviceAreas && vendor.serviceAreas.length > 0 && (
+                                <div className="mt-2 flex items-center text-sm text-gray-500">
+                                    <MapPin className="h-3 w-3 mr-1" />
+                                    {vendor.serviceAreas.slice(0, 2).join(", ")}
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}

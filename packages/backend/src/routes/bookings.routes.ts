@@ -1,12 +1,37 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { z } from 'zod';
 import { prisma } from '../config/prisma.js';
 import { logger } from '../utils/logger.js';
+import { validateBody, validateQuery, validateParams } from '../middleware/validation.middleware.js';
+import { publicApiRateLimitConfig, bookingRateLimitConfig } from '../middleware/rateLimit.middleware.js';
+import { 
+    createBookingSchema, 
+    bookingListQuerySchema, 
+    cancelBookingSchema,
+    uuidSchema 
+} from '../schemas/index.js';
+import { 
+    successResponse, 
+    paginatedResponse, 
+    errorResponse, 
+    ErrorCode, 
+    getStatusCode 
+} from '../utils/response.js';
+import { 
+    acquireAvailabilityLock, 
+    releaseAvailabilityLock, 
+    confirmBookingAvailability 
+} from '../services/booking-lock.service.js';
 
 export default async function bookingsRoutes(fastify: FastifyInstance): Promise<void> {
 
     // Create a new booking (from agent or user)
     fastify.post(
         '/',
+        { 
+            config: { rateLimit: bookingRateLimitConfig },
+            preHandler: [validateBody(createBookingSchema)] 
+        },
         async (request: FastifyRequest, reply: FastifyReply) => {
             try {
                 const {
@@ -75,13 +100,12 @@ export default async function bookingsRoutes(fastify: FastifyInstance): Promise<
 
                 logger.info('Booking created', { bookingId: booking.id, vendorId, serviceId });
 
-                return reply.status(201).send({
-                    success: true,
-                    booking,
-                });
+                return reply.status(201).send(successResponse(booking));
             } catch (error: any) {
                 logger.error('Error creating booking', { error: error.message });
-                return reply.status(500).send({ error: 'Failed to create booking' });
+                return reply.status(getStatusCode(ErrorCode.DATABASE_ERROR)).send(
+                    errorResponse(ErrorCode.DATABASE_ERROR, 'Failed to create booking')
+                );
             }
         }
     );
@@ -89,15 +113,19 @@ export default async function bookingsRoutes(fastify: FastifyInstance): Promise<
     // List bookings (filter by email or all)
     fastify.get(
         '/',
+        { 
+            config: { rateLimit: publicApiRateLimitConfig },
+            preHandler: [validateQuery(bookingListQuerySchema)] 
+        },
         async (request: FastifyRequest, reply: FastifyReply) => {
             try {
-                const { email, status, page = '1', limit = '20' } = request.query as any;
+                const { email, status, page, limit } = request.query as any;
 
                 const where: any = {};
                 if (email) where.clientEmail = email;
                 if (status) where.status = status;
 
-                const skip = (parseInt(page) - 1) * parseInt(limit);
+                const skip = (page - 1) * limit;
 
                 const [bookings, total] = await Promise.all([
                     prisma.booking.findMany({
@@ -108,33 +136,31 @@ export default async function bookingsRoutes(fastify: FastifyInstance): Promise<
                         },
                         orderBy: { createdAt: 'desc' },
                         skip,
-                        take: parseInt(limit),
+                        take: limit,
                     }),
                     prisma.booking.count({ where }),
                 ]);
 
-                return reply.send({
-                    bookings,
-                    pagination: {
-                        total,
-                        page: parseInt(page),
-                        limit: parseInt(limit),
-                        pages: Math.ceil(total / parseInt(limit)),
-                    },
-                });
+                return reply.send(paginatedResponse(bookings, total, page, limit));
             } catch (error: any) {
                 logger.error('Error listing bookings', { error: error.message });
-                return reply.status(500).send({ error: 'Failed to list bookings' });
+                return reply.status(getStatusCode(ErrorCode.DATABASE_ERROR)).send(
+                    errorResponse(ErrorCode.DATABASE_ERROR, 'Failed to list bookings')
+                );
             }
         }
     );
 
     // Get booking details
-    fastify.get(
+    fastify.get<{ Params: { id: string } }>(
         '/:id',
-        async (request: FastifyRequest, reply: FastifyReply) => {
+        { 
+            config: { rateLimit: publicApiRateLimitConfig },
+            preHandler: [validateParams(z.object({ id: uuidSchema }))] 
+        },
+        async (request, reply) => {
             try {
-                const { id } = request.params as any;
+                const { id } = request.params;
 
                 const booking = await prisma.booking.findUnique({
                     where: { id },
@@ -146,32 +172,48 @@ export default async function bookingsRoutes(fastify: FastifyInstance): Promise<
                 });
 
                 if (!booking) {
-                    return reply.status(404).send({ error: 'Booking not found' });
+                    return reply.status(404).send(
+                        errorResponse(ErrorCode.BOOKING_NOT_FOUND, 'Booking not found')
+                    );
                 }
 
-                return reply.send({ booking });
+                return reply.send(successResponse(booking));
             } catch (error: any) {
                 logger.error('Error getting booking', { error: error.message });
-                return reply.status(500).send({ error: 'Failed to get booking' });
+                return reply.status(getStatusCode(ErrorCode.DATABASE_ERROR)).send(
+                    errorResponse(ErrorCode.DATABASE_ERROR, 'Failed to get booking')
+                );
             }
         }
     );
 
     // Cancel a booking
-    fastify.patch(
+    fastify.patch<{ Params: { id: string } }>(
         '/:id/cancel',
-        async (request: FastifyRequest, reply: FastifyReply) => {
+        { 
+            config: { rateLimit: publicApiRateLimitConfig },
+            preHandler: [
+                validateParams(z.object({ id: uuidSchema })),
+                validateBody(cancelBookingSchema)
+            ] 
+        },
+        async (request, reply) => {
             try {
-                const { id } = request.params as any;
+                const { id } = request.params;
                 const { reason } = request.body as any;
 
                 const booking = await prisma.booking.findUnique({ where: { id } });
+                
                 if (!booking) {
-                    return reply.status(404).send({ error: 'Booking not found' });
+                    return reply.status(404).send(
+                        errorResponse(ErrorCode.BOOKING_NOT_FOUND, 'Booking not found')
+                    );
                 }
 
                 if (booking.status === 'cancelled') {
-                    return reply.status(400).send({ error: 'Booking is already cancelled' });
+                    return reply.status(400).send(
+                        errorResponse(ErrorCode.RESOURCE_CONFLICT, 'Booking is already cancelled')
+                    );
                 }
 
                 const updated = await prisma.booking.update({
@@ -189,10 +231,12 @@ export default async function bookingsRoutes(fastify: FastifyInstance): Promise<
 
                 logger.info('Booking cancelled', { bookingId: id, reason });
 
-                return reply.send({ success: true, booking: updated });
+                return reply.send(successResponse(updated));
             } catch (error: any) {
                 logger.error('Error cancelling booking', { error: error.message });
-                return reply.status(500).send({ error: 'Failed to cancel booking' });
+                return reply.status(getStatusCode(ErrorCode.DATABASE_ERROR)).send(
+                    errorResponse(ErrorCode.DATABASE_ERROR, 'Failed to cancel booking')
+                );
             }
         }
     );

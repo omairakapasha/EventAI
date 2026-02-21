@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
     Send,
     Bot,
@@ -255,9 +256,21 @@ export default function ChatPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [showScrollBtn, setShowScrollBtn] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const router = useRouter();
+
+    // Check authentication on mount
+    useEffect(() => {
+        const token = localStorage.getItem('userToken');
+        if (!token) {
+            router.push('/login');
+        } else {
+            setIsAuthenticated(true);
+        }
+    }, [router]);
 
     const scrollToBottom = useCallback(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -282,6 +295,12 @@ export default function ChatPage() {
     const sendMessage = async (text: string) => {
         if (!text.trim() || isLoading) return;
 
+        const token = localStorage.getItem('userToken');
+        if (!token) {
+            router.push('/login');
+            return;
+        }
+
         const userMessage: Message = {
             id: Date.now().toString(),
             role: "user",
@@ -296,12 +315,22 @@ export default function ChatPage() {
         try {
             const response = await fetch("/api/chat", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     message: text,
                     sessionId: sessionId,
                 }),
             });
+
+            if (response.status === 401) {
+                localStorage.removeItem('userToken');
+                localStorage.removeItem('userData');
+                router.push('/login');
+                return;
+            }
 
             if (!response.ok) throw new Error("Failed to get response");
 

@@ -1,12 +1,27 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { z } from 'zod';
 import { prisma } from '../config/prisma.js';
 import { logger } from '../utils/logger.js';
+import { validateQuery, validateParams } from '../middleware/validation.middleware.js';
+import { publicApiRateLimitConfig } from '../middleware/rateLimit.middleware.js';
+import { vendorListQuerySchema, uuidSchema } from '../schemas/index.js';
+import { 
+    successResponse, 
+    paginatedResponse, 
+    errorResponse, 
+    ErrorCode, 
+    getStatusCode 
+} from '../utils/response.js';
 
 export default async function publicVendorRoutes(fastify: FastifyInstance): Promise<void> {
 
     // Public listing of active vendors (no auth required — used by chatbot agent)
     fastify.get(
         '/',
+        { 
+            config: { rateLimit: publicApiRateLimitConfig },
+            preHandler: [validateQuery(vendorListQuerySchema)] 
+        },
         async (request: FastifyRequest, reply: FastifyReply) => {
             try {
                 const {
@@ -15,8 +30,8 @@ export default async function publicVendorRoutes(fastify: FastifyInstance): Prom
                     search,
                     minRating,
                     maxPrice,
-                    page = '1',
-                    limit = '20',
+                    page,
+                    limit,
                 } = request.query as any;
 
                 const where: any = {
@@ -50,7 +65,7 @@ export default async function publicVendorRoutes(fastify: FastifyInstance): Prom
                     where.pricingMax = { lte: parseFloat(maxPrice) };
                 }
 
-                const skip = (parseInt(page) - 1) * parseInt(limit);
+                const skip = (page - 1) * limit;
 
                 const [vendors, total] = await Promise.all([
                     prisma.vendor.findMany({
@@ -91,33 +106,28 @@ export default async function publicVendorRoutes(fastify: FastifyInstance): Prom
                         },
                         orderBy: [{ rating: 'desc' }, { totalReviews: 'desc' }],
                         skip,
-                        take: parseInt(limit),
+                        take: limit,
                     }),
                     prisma.vendor.count({ where }),
                 ]);
 
-                return reply.send({
-                    vendors,
-                    pagination: {
-                        total,
-                        page: parseInt(page),
-                        limit: parseInt(limit),
-                        pages: Math.ceil(total / parseInt(limit)),
-                    },
-                });
+                return reply.send(paginatedResponse(vendors, total, page, limit));
             } catch (error: any) {
                 logger.error('Error listing public vendors', { error: error.message });
-                return reply.status(500).send({ error: 'Failed to list vendors' });
+                return reply.status(getStatusCode(ErrorCode.DATABASE_ERROR)).send(
+                    errorResponse(ErrorCode.DATABASE_ERROR, 'Failed to list vendors')
+                );
             }
         }
     );
 
     // Get public vendor details by ID (no auth)
-    fastify.get(
+    fastify.get<{ Params: { id: string } }>(
         '/:id',
-        async (request: FastifyRequest, reply: FastifyReply) => {
+        { preHandler: [validateParams(z.object({ id: uuidSchema }))] },
+        async (request, reply) => {
             try {
-                const { id } = request.params as any;
+                const { id } = request.params;
 
                 const vendor = await prisma.vendor.findFirst({
                     where: { id, status: 'ACTIVE' },
@@ -166,13 +176,17 @@ export default async function publicVendorRoutes(fastify: FastifyInstance): Prom
                 });
 
                 if (!vendor) {
-                    return reply.status(404).send({ error: 'Vendor not found' });
+                    return reply.status(404).send(
+                        errorResponse(ErrorCode.VENDOR_NOT_FOUND, 'Vendor not found')
+                    );
                 }
 
-                return reply.send({ vendor });
+                return reply.send(successResponse(vendor));
             } catch (error: any) {
                 logger.error('Error getting public vendor', { error: error.message });
-                return reply.status(500).send({ error: 'Failed to get vendor details' });
+                return reply.status(getStatusCode(ErrorCode.DATABASE_ERROR)).send(
+                    errorResponse(ErrorCode.DATABASE_ERROR, 'Failed to get vendor details')
+                );
             }
         }
     );

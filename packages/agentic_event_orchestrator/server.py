@@ -1,6 +1,7 @@
 """FastAPI server for the Agentic Event Orchestrator using OpenAI Agent SDK."""
 
-from fastapi import FastAPI, HTTPException
+import logging
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
@@ -9,6 +10,10 @@ import os
 import sys
 import uuid
 from datetime import datetime
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+logger = logging.getLogger("agentic_orchestrator")
 
 # Add the current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -30,14 +35,40 @@ app = FastAPI(
     version="3.0.0"
 )
 
-# CORS middleware
+# CORS middleware — restrict to known origins
+ALLOWED_ORIGINS = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[origin.strip() for origin in ALLOWED_ORIGINS],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
+
+# ============================================================================
+# AUTH MIDDLEWARE — API Key validation
+# ============================================================================
+
+AI_SERVICE_API_KEY = os.getenv("AI_SERVICE_API_KEY", "")
+
+async def verify_api_key(request: Request):
+    """Verify that the request contains a valid API key.
+    
+    In development (no key configured), all requests are allowed.
+    In production, requires X-API-Key header matching AI_SERVICE_API_KEY.
+    """
+    if not AI_SERVICE_API_KEY:
+        # No key configured — development mode, allow all
+        return
+    
+    api_key = request.headers.get("X-API-Key", "")
+    if api_key != AI_SERVICE_API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+
 
 # ============================================================================
 # SESSION MANAGEMENT (in-memory for now)
@@ -99,17 +130,11 @@ def health_check():
     return {
         "status": "healthy",
         "service": "Agentic Event Orchestrator",
-        "sdk": "OpenAI Agent SDK + LiteLLM/Gemini",
         "version": "3.0.0",
-        "agents": [
-            "TriageAgent", "VendorDiscoveryAgent", "SchedulerAgent",
-            "ApprovalAgent", "MailAgent", "BookingAgent", "EventPlannerAgent",
-            "OrchestratorAgent"
-        ]
     }
 
 
-@app.post("/api/chat")
+@app.post("/api/chat", dependencies=[Depends(verify_api_key)])
 def chat(request: ChatRequest) -> ChatResponse:
     """Main chat endpoint — the primary way users interact with the system.
     
@@ -158,16 +183,15 @@ def chat(request: ChatRequest) -> ChatResponse:
         )
         
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        logger.error("Chat endpoint error", exc_info=True)
         return ChatResponse(
-            response=f"I apologize, I encountered an issue processing your request. Please try again. (Error: {str(e)[:100]})",
+            response="I apologize, I encountered an issue processing your request. Please try again.",
             agent="System",
             session_id=request.session_id or str(uuid.uuid4()),
         )
 
 
-@app.post("/api/agent/orchestrate")
+@app.post("/api/agent/orchestrate", dependencies=[Depends(verify_api_key)])
 def orchestrate_event(request: PlanRequest) -> AgentResponse:
     """Main orchestration endpoint using OpenAI Agent SDK."""
     try:
@@ -179,10 +203,11 @@ def orchestrate_event(request: PlanRequest) -> AgentResponse:
             agent_used=result.last_agent.name
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Orchestration endpoint error", exc_info=True)
+        raise HTTPException(status_code=500, detail="An internal error occurred while processing your request.")
 
 
-@app.post("/api/agent/discover")
+@app.post("/api/agent/discover", dependencies=[Depends(verify_api_key)])
 def discover_vendors(request: PlanRequest) -> AgentResponse:
     """Vendor discovery using specialized agent."""
     try:
@@ -194,14 +219,25 @@ def discover_vendors(request: PlanRequest) -> AgentResponse:
             agent_used=result.last_agent.name
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Vendor discovery endpoint error", exc_info=True)
+        raise HTTPException(status_code=500, detail="An internal error occurred while processing your request.")
 
 
-@app.post("/api/agent/schedule")
+@app.post("/api/agent/schedule", dependencies=[Depends(verify_api_key)])
 def create_schedule(request: PlanRequest) -> AgentResponse:
     """Schedule optimization using scheduler agent."""
     try:
-        result = run_scheduler({"event_type": "event", "date": "2026-01-01", "attendees": 50, "budget": 100000, "preferences": []})
+        # Parse context or use message to extract event details
+        event_details = request.context or {}
+        if not event_details:
+            # Let the scheduler agent interpret the free-text message
+            event_details = {
+                "message": request.message,
+                "event_type": "event",
+                "preferences": [],
+            }
+        
+        result = run_scheduler(event_details)
         
         return AgentResponse(
             success=True,
@@ -209,10 +245,11 @@ def create_schedule(request: PlanRequest) -> AgentResponse:
             agent_used=result.last_agent.name
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Schedule endpoint error", exc_info=True)
+        raise HTTPException(status_code=500, detail="An internal error occurred while processing your request.")
 
 
-@app.post("/api/agent/plan")
+@app.post("/api/agent/plan", dependencies=[Depends(verify_api_key)])
 def plan_event(request: PlanRequest) -> AgentResponse:
     """Plan endpoint (legacy compatibility for backend proxy)."""
     try:
@@ -224,7 +261,8 @@ def plan_event(request: PlanRequest) -> AgentResponse:
             agent_used=result.last_agent.name
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Plan endpoint error", exc_info=True)
+        raise HTTPException(status_code=500, detail="An internal error occurred while processing your request.")
 
 
 if __name__ == "__main__":

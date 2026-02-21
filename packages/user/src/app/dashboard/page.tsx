@@ -93,9 +93,9 @@ export default function DashboardPage() {
                     <div className="p-6">
                         {eventsLoading ? (
                             <p className="text-gray-500">Loading events...</p>
-                        ) : events?.data?.length ? (
+                        ) : events?.events?.length ? (
                             <div className="space-y-4">
-                                {events.data.slice(0, 3).map((event: any) => (
+                                {events.events.slice(0, 3).map((event: any) => (
                                     <div
                                         key={event.id}
                                         className="flex items-center justify-between rounded-lg border border-gray-200 p-4"
@@ -145,9 +145,9 @@ export default function DashboardPage() {
                     <div className="p-6">
                         {bookingsLoading ? (
                             <p className="text-gray-500">Loading bookings...</p>
-                        ) : bookings?.data?.length ? (
+                        ) : bookings?.bookings?.length ? (
                             <div className="space-y-4">
-                                {bookings.data.slice(0, 3).map((booking: any) => (
+                                {bookings.bookings.slice(0, 3).map((booking: any) => (
                                     <div
                                         key={booking.id}
                                         className="flex items-center justify-between rounded-lg border border-gray-200 p-4"

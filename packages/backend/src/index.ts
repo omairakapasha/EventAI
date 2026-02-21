@@ -9,6 +9,7 @@ import { config } from './config/env.js';
 import { healthCheck, connectDatabase, closePool } from './config/database.js';
 import { getRedisClient, closeRedis } from './config/redis.js';
 import { logger } from './utils/logger.js';
+import { metrics } from './utils/metrics.js';
 
 // Prevent unhandled rejections (e.g. from Redis) from crashing the process
 process.on('unhandledRejection', (reason: any) => {
@@ -19,16 +20,20 @@ import { defaultRateLimitConfig } from './middleware/rateLimit.middleware.js';
 
 // Routes
 import authRoutes from './routes/auth.routes.js';
+import { userAuthRoutes } from './routes/user-auth.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import servicesRoutes from './routes/services.routes.js';
 import pricingRoutes from './routes/pricing.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import { adminUserRoutes } from './routes/admin-users.routes.js';
 import vendorRoutes from './routes/vendor.routes.js';
 import messagesRoutes from './routes/messages.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import bookingsRoutes from './routes/bookings.routes.js';
 import eventsRoutes from './routes/events.routes.js';
 import publicVendorRoutes from './routes/public-vendors.routes.js';
+import healthRoutes from './routes/health.routes.js';
+import metricsRoutes from './routes/metrics.routes.js';
 
 const app = Fastify({
     logger: false, // We use Winston for logging
@@ -55,9 +60,10 @@ const startServer = async () => {
     });
 
     // CORS
-    const corsOrigin = config.cors.origin.includes(',')
-        ? config.cors.origin.split(',').map(s => s.trim())
-        : config.cors.origin;
+    const rawOrigin = config.cors.origin;
+    const corsOrigin: string | string[] = Array.isArray(rawOrigin)
+        ? rawOrigin
+        : (rawOrigin as string).split(',').map((s: string) => s.trim());
     await app.register(fastifyCors, {
         origin: corsOrigin,
         credentials: true,
@@ -86,9 +92,11 @@ const startServer = async () => {
     // Request ID
     app.addHook('onRequest', requestIdMiddleware);
 
-    // Request logging
+    // Request logging and metrics collection
     app.addHook('onResponse', async (request: FastifyRequest, reply: FastifyReply) => {
         const duration = reply.elapsedTime;
+        
+        // Log request
         logger.info('Request completed', {
             method: request.method,
             path: request.url,
@@ -96,6 +104,14 @@ const startServer = async () => {
             duration: `${Math.round(duration)}ms`,
             requestId: request.requestId,
         });
+
+        // Record metrics
+        metrics.recordRequest(
+            request.method,
+            request.url,
+            reply.statusCode,
+            Math.round(duration)
+        );
     });
 
     // Audit logging (onResponse)
@@ -105,42 +121,18 @@ const startServer = async () => {
 
     const API_PREFIX = `/api/${config.server.apiVersion}`;
 
-    // Health check
-    app.get('/health', async (request: FastifyRequest, reply: FastifyReply) => {
-        const dbHealthy = await healthCheck();
-        let redisHealthy = false;
-
-        try {
-            const redis = await getRedisClient();
-            if (redis) {
-                await redis.ping();
-                redisHealthy = true;
-            }
-        } catch (error) {
-            logger.warn('Redis health check failed (non-critical)', { error });
-        }
-
-        // Server is healthy as long as DB is up — Redis is optional
-        const status = dbHealthy ? 'healthy' : 'unhealthy';
-        const statusCode = dbHealthy ? 200 : 503;
-
-        return reply.status(statusCode).send({
-            status,
-            timestamp: new Date().toISOString(),
-            services: {
-                database: dbHealthy ? 'up' : 'down',
-                redis: redisHealthy ? 'up' : 'down (optional)',
-            },
-        });
-    });
+    // Health check routes (includes /health, /health/detailed, /health/ready, /health/live)
+    await app.register(healthRoutes, { prefix: `${API_PREFIX}` });
 
     // API routes
     await app.register(authRoutes, { prefix: `${API_PREFIX}/auth` });
+    await app.register(userAuthRoutes, { prefix: `${API_PREFIX}/users` });
     await app.register(profileRoutes, { prefix: `${API_PREFIX}/vendors` });
     await app.register(servicesRoutes, { prefix: `${API_PREFIX}/vendors/me/services` });
     await app.register(pricingRoutes, { prefix: `${API_PREFIX}/vendors/me/pricing` });
     await app.register(vendorRoutes, { prefix: `${API_PREFIX}/vendors/me` });
     await app.register(adminRoutes, { prefix: `${API_PREFIX}/admin` });
+    await app.register(adminUserRoutes, { prefix: `${API_PREFIX}/admin/user-mgmt` });
 
     // Message routes
     await app.register(messagesRoutes, { prefix: `${API_PREFIX}/messages` });
@@ -156,6 +148,9 @@ const startServer = async () => {
 
     // Public vendor routes (no auth, used by chatbot)
     await app.register(publicVendorRoutes, { prefix: `${API_PREFIX}/marketplace` });
+
+    // Metrics routes (admin only in production)
+    await app.register(metricsRoutes, { prefix: `${API_PREFIX}` });
 
     // 404 handler
     app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) => {

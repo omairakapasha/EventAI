@@ -148,7 +148,8 @@ exports.Prisma.VendorScalarFieldEnum = {
   totalReviews: 'totalReviews',
   category: 'category',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  approvedBy: 'approvedBy'
 };
 
 exports.Prisma.VendorUserScalarFieldEnum = {
@@ -289,6 +290,7 @@ exports.Prisma.BookingScalarFieldEnum = {
   id: 'id',
   vendorId: 'vendorId',
   serviceId: 'serviceId',
+  userId: 'userId',
   eventId: 'eventId',
   eventName: 'eventName',
   eventDate: 'eventDate',
@@ -392,6 +394,7 @@ exports.Prisma.WebhookDeliveryScalarFieldEnum = {
 
 exports.Prisma.EventScalarFieldEnum = {
   id: 'id',
+  userId: 'userId',
   eventType: 'eventType',
   eventName: 'eventName',
   eventDate: 'eventDate',
@@ -449,6 +452,9 @@ exports.Prisma.VendorAvailabilityScalarFieldEnum = {
   endTime: 'endTime',
   status: 'status',
   bookingId: 'bookingId',
+  lockedUntil: 'lockedUntil',
+  lockedBy: 'lockedBy',
+  lockedReason: 'lockedReason',
   notes: 'notes',
   blockedBy: 'blockedBy',
   blockedReason: 'blockedReason',
@@ -517,6 +523,63 @@ exports.Prisma.EventEmbeddingScalarFieldEnum = {
   metadata: 'metadata',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  phone: 'phone',
+  avatarUrl: 'avatarUrl',
+  status: 'status',
+  emailVerified: 'emailVerified',
+  approvedBy: 'approvedBy',
+  approvedAt: 'approvedAt',
+  rejectedAt: 'rejectedAt',
+  rejectionReason: 'rejectionReason',
+  emailVerificationToken: 'emailVerificationToken',
+  emailVerificationExpires: 'emailVerificationExpires',
+  passwordResetToken: 'passwordResetToken',
+  passwordResetExpires: 'passwordResetExpires',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  lastLoginAt: 'lastLoginAt'
+};
+
+exports.Prisma.AdminScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  role: 'role',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  lastLoginAt: 'lastLoginAt'
+};
+
+exports.Prisma.ChatSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  title: 'title',
+  status: 'status',
+  context: 'context',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MessageScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  userId: 'userId',
+  role: 'role',
+  content: 'content',
+  agentName: 'agentName',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -725,6 +788,18 @@ exports.PriceUploadStatus = exports.$Enums.PriceUploadStatus = {
   partial: 'partial'
 };
 
+exports.UserStatus = exports.$Enums.UserStatus = {
+  pending: 'pending',
+  approved: 'approved',
+  rejected: 'rejected'
+};
+
+exports.AdminRole = exports.$Enums.AdminRole = {
+  super_admin: 'super_admin',
+  admin: 'admin',
+  moderator: 'moderator'
+};
+
 exports.Prisma.ModelName = {
   Vendor: 'Vendor',
   VendorUser: 'VendorUser',
@@ -745,7 +820,11 @@ exports.Prisma.ModelName = {
   PriceUploadRecord: 'PriceUploadRecord',
   QueryPerformanceLog: 'QueryPerformanceLog',
   VendorEmbedding: 'VendorEmbedding',
-  EventEmbedding: 'EventEmbedding'
+  EventEmbedding: 'EventEmbedding',
+  User: 'User',
+  Admin: 'Admin',
+  ChatSession: 'ChatSession',
+  Message: 'Message'
 };
 
 /**

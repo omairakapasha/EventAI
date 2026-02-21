@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Calendar } from "lucide-react";
 
-export default function LoginPage() {
+// Component that uses search params - wrapped in Suspense
+function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const registered = searchParams.get("registered");
@@ -14,25 +14,48 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [pendingMessage, setPendingMessage] = useState(false);
+    const [rejectedMessage, setRejectedMessage] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
+        setPendingMessage(false);
+        setRejectedMessage(false);
         setLoading(true);
 
-        const result = await signIn("credentials", {
-            email,
-            password,
-            redirect: false,
-        });
+        try {
+            const response = await fetch("http://localhost:3001/api/v1/users/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
 
-        setLoading(false);
+            const data = await response.json();
 
-        if (result?.error) {
-            setError("Invalid email or password");
-        } else {
-            router.push("/dashboard");
-            router.refresh();
+            if (!response.ok) {
+                if (data.code === "PENDING_APPROVAL") {
+                    setPendingMessage(true);
+                    setLoading(false);
+                    return;
+                }
+                if (data.code === "ACCOUNT_REJECTED") {
+                    setRejectedMessage(true);
+                    setLoading(false);
+                    return;
+                }
+                throw new Error(data.error || "Login failed");
+            }
+
+            // Store token in localStorage
+            localStorage.setItem("userToken", data.data.token);
+            localStorage.setItem("userData", JSON.stringify(data.data.user));
+
+            // Redirect to chat page
+            router.push("/chat");
+        } catch (err: any) {
+            setError(err.message || "Invalid email or password");
+            setLoading(false);
         }
     };
 
@@ -57,7 +80,17 @@ export default function LoginPage() {
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     {registered && (
                         <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm">
-                            Account created successfully! Please sign in.
+                            Account created successfully! Waiting for admin approval.
+                        </div>
+                    )}
+                    {pendingMessage && (
+                        <div className="bg-yellow-50 text-yellow-700 p-3 rounded-md text-sm">
+                            Your account is pending admin approval. Please check back later.
+                        </div>
+                    )}
+                    {rejectedMessage && (
+                        <div className="bg-red-50 text-red-700 p-3 rounded-md text-sm">
+                            Your account has been rejected. Contact support for assistance.
                         </div>
                     )}
                     {error && (
@@ -110,11 +143,29 @@ export default function LoginPage() {
 
                 <p className="text-center text-sm text-gray-600">
                     Don&apos;t have an account?{" "}
-                    <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
+                    <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
                         Create one
                     </Link>
                 </p>
             </div>
         </div>
+    );
+}
+
+// Main page component with Suspense boundary
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white">
+                <div className="text-center">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 mx-auto mb-4">
+                        <Calendar className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="text-lg font-semibold text-gray-900">Loading...</span>
+                </div>
+            </div>
+        }>
+            <LoginForm />
+        </Suspense>
     );
 }

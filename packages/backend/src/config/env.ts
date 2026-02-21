@@ -7,7 +7,7 @@ const envSchema = z.object({
     API_VERSION: z.string().default('v1'),
 
     // Database
-    DATABASE_URL: z.string().optional(),
+    DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
     DB_HOST: z.string().default('localhost'),
     DB_PORT: z.string().default('5432').transform(Number),
     DB_NAME: z.string().default('event_ai'),

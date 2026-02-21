@@ -3,6 +3,7 @@
 These tools handle approval requests, notifications, and decision tracking.
 """
 
+import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import sys, os
@@ -71,10 +72,9 @@ def request_approval(
     else:
         approver_level = "executive"
     
-    print(f"📝 Approval request {request_id} created")
-    print(f"   Event: {event_type}, Cost: PKR {total_cost:,.0f}")
-    print(f"   Required approver level: {approver_level}")
-    print(f"   Urgency: {urgency}")
+    logger = logging.getLogger("tools.approval")
+    logger.info("Approval request %s created — Event: %s, Cost: PKR %s, Level: %s, Urgency: %s",
+                request_id, event_type, f"{total_cost:,.0f}", approver_level, urgency)
     
     return ApprovalRequest(
         request_id=request_id,
@@ -176,7 +176,7 @@ def notify_stakeholders(
     for stakeholder in stakeholders:
         if "@" in stakeholder:
             notified.append(stakeholder)
-            print(f"📢 Notified {stakeholder}: {notification_type}")
+            logging.getLogger("tools.approval").info("Notified %s: %s", stakeholder, notification_type)
         else:
             failed.append(stakeholder)
     
@@ -209,10 +209,9 @@ def record_approval_decision(
     """
     status = "approved" if approved else "rejected"
     
-    print(f"✅ Approval decision recorded for {request_id}")
-    print(f"   Decision: {status.upper()} by {decision_by}")
-    if notes:
-        print(f"   Notes: {notes}")
+    logger = logging.getLogger("tools.approval")
+    logger.info("Approval decision recorded for %s — %s by %s%s",
+                request_id, status.upper(), decision_by, f" ({notes})" if notes else "")
     
     return ApprovalDecision(
         request_id=request_id,

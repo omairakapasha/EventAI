@@ -9,20 +9,21 @@ export const api = axios.create({
     },
 });
 
-// Vendor API
+// Vendor API - Using /marketplace prefix for public vendor discovery
 export const getVendors = async (params?: { category?: string; search?: string }) => {
-    const response = await api.get("/vendors", { params });
+    const response = await api.get("/marketplace", { params });
     return response.data;
 };
 
 export const getVendorById = async (id: string) => {
-    const response = await api.get(`/vendors/${id}`);
+    const response = await api.get(`/marketplace/${id}`);
     return response.data;
 };
 
 export const getVendorServices = async (vendorId: string) => {
-    const response = await api.get(`/vendors/${vendorId}/services`);
-    return response.data;
+    const response = await api.get(`/marketplace/${vendorId}`);
+    // Extract services from vendor details
+    return response.data?.vendor?.services || [];
 };
 
 // Event API
@@ -51,12 +52,16 @@ export const getEventById = async (id: string) => {
 
 // AI Agent API
 export const planEventWithAI = async (message: string) => {
-    const response = await api.post("/ai/plan", { message });
+    const response = await api.post("/ai/chat", { message });
     return response.data;
 };
 
 export const discoverVendorsWithAI = async (query: string, location: string) => {
-    const response = await api.post("/ai/discover", { query, location });
+    // Using the same chat endpoint with discovery context
+    const response = await api.post("/ai/chat", { 
+        message: `Find vendors for: ${query} in ${location}`,
+        context: "discovery"
+    });
     return response.data;
 };
 
