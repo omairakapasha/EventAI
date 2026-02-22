@@ -44,9 +44,9 @@ export default function Dashboard() {
   const statCards = [
     {
       name: "Total Revenue",
-      value: `PKR ${(stats?.revenue || 0).toLocaleString()}`,
+      value: `PKR ${(stats?.totalBookings || 0).toLocaleString()}`,
       icon: DollarSign,
-      change: "Lifetime",
+      change: "Total bookings",
       changeType: "neutral"
     },
     {
@@ -64,10 +64,10 @@ export default function Dashboard() {
       changeType: "positive"
     },
     {
-      name: "Active Events",
-      value: stats?.activeEvents || 0,
+      name: "Pending Vendors",
+      value: stats?.pendingVendors || 0,
       icon: Activity,
-      change: "In progress",
+      change: "Awaiting approval",
       changeType: "positive"
     },
   ];

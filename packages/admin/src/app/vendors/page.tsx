@@ -56,9 +56,9 @@ export default function VendorsPage() {
                                         <span
                                             className={cn(
                                                 "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                                                vendor.status === "approved"
+                                                vendor.status === "ACTIVE"
                                                     ? "bg-green-100 text-green-800"
-                                                    : vendor.status === "rejected"
+                                                    : vendor.status === "SUSPENDED" || vendor.status === "DEACTIVATED"
                                                         ? "bg-red-100 text-red-800"
                                                         : "bg-yellow-100 text-yellow-800"
                                             )}
@@ -70,15 +70,15 @@ export default function VendorsPage() {
                                     <td className="p-4 align-middle text-right">
                                         <div className="flex justify-end gap-2">
                                             <button
-                                                onClick={() => mutation.mutate({ id: vendor.id, status: "approved" })}
-                                                disabled={vendor.status === "approved" || mutation.isPending}
+                                                onClick={() => mutation.mutate({ id: vendor.id, status: "ACTIVE" })}
+                                                disabled={vendor.status === "ACTIVE" || mutation.isPending}
                                                 className="p-2 hover:bg-green-100 rounded-full text-green-600 disabled:opacity-50"
                                             >
                                                 <Check className="h-4 w-4" />
                                             </button>
                                             <button
-                                                onClick={() => mutation.mutate({ id: vendor.id, status: "rejected" })}
-                                                disabled={vendor.status === "rejected" || mutation.isPending}
+                                                onClick={() => mutation.mutate({ id: vendor.id, status: "SUSPENDED" })}
+                                                disabled={vendor.status === "SUSPENDED" || mutation.isPending}
                                                 className="p-2 hover:bg-red-100 rounded-full text-red-600 disabled:opacity-50"
                                             >
                                                 <X className="h-4 w-4" />

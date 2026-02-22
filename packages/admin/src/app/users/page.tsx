@@ -1,24 +1,14 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getUsers, updateUserStatus } from "@/lib/api";
-import { Check, Ban, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getUsers } from "@/lib/api";
+import { Loader2 } from "lucide-react";
 import { cn } from "@repo/ui/lib/utils";
 
 export default function UsersPage() {
-    const queryClient = useQueryClient();
-
     const { data: users, isLoading } = useQuery({
         queryKey: ["users"],
         queryFn: getUsers,
-    });
-
-    const mutation = useMutation({
-        mutationFn: ({ id, status }: { id: string; status: string }) =>
-            updateUserStatus(id, status),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["users"] });
-        },
     });
 
     if (isLoading) {
@@ -43,45 +33,52 @@ export default function UsersPage() {
                                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Name</th>
                                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Email</th>
                                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Role</th>
-                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
-                                <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Actions</th>
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Vendor</th>
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Verified</th>
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Last Login</th>
                             </tr>
                         </thead>
                         <tbody className="[&_tr:last-child]:border-0">
                             {users?.map((user: any) => (
                                 <tr key={user.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                                    <td className="p-4 align-middle font-medium">{user.name}</td>
+                                    <td className="p-4 align-middle font-medium">
+                                        {user.firstName} {user.lastName}
+                                    </td>
                                     <td className="p-4 align-middle">{user.email}</td>
                                     <td className="p-4 align-middle capitalize">{user.role}</td>
+                                    <td className="p-4 align-middle">
+                                        <div className="flex items-center gap-2">
+                                            <span>{user.vendor?.name || "—"}</span>
+                                            {user.vendor?.status && (
+                                                <span
+                                                    className={cn(
+                                                        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                                                        user.vendor.status === "ACTIVE"
+                                                            ? "bg-green-100 text-green-800"
+                                                            : "bg-yellow-100 text-yellow-800"
+                                                    )}
+                                                >
+                                                    {user.vendor.status}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td className="p-4 align-middle">
                                         <span
                                             className={cn(
                                                 "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                                                user.status === "active"
+                                                user.emailVerified
                                                     ? "bg-green-100 text-green-800"
                                                     : "bg-red-100 text-red-800"
                                             )}
                                         >
-                                            {user.status}
+                                            {user.emailVerified ? "Verified" : "Unverified"}
                                         </span>
                                     </td>
-                                    <td className="p-4 align-middle text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <button
-                                                onClick={() => mutation.mutate({ id: user.id, status: "active" })}
-                                                disabled={user.status === "active" || mutation.isPending}
-                                                className="p-2 hover:bg-green-100 rounded-full text-green-600 disabled:opacity-50"
-                                            >
-                                                <Check className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => mutation.mutate({ id: user.id, status: "suspended" })}
-                                                disabled={user.status === "suspended" || mutation.isPending}
-                                                className="p-2 hover:bg-red-100 rounded-full text-red-600 disabled:opacity-50"
-                                            >
-                                                <Ban className="h-4 w-4" />
-                                            </button>
-                                        </div>
+                                    <td className="p-4 align-middle text-sm text-muted-foreground">
+                                        {user.lastLoginAt
+                                            ? new Date(user.lastLoginAt).toLocaleDateString()
+                                            : "Never"}
                                     </td>
                                 </tr>
                             ))}

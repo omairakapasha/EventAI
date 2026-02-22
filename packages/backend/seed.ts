@@ -260,14 +260,49 @@ async function main() {
         console.log(`  ✅ ${adminEmail} → ${v.name}`);
     }
 
+    // ====== PLATFORM USERS (User table) ======
+    console.log('\n👤 Adding platform users...');
+    const userPasswordHash = await bcrypt.hash('User@2026', SALT_ROUNDS);
+    const platformUsers = [
+        { email: 'user@eventai.pk', firstName: 'Test', lastName: 'User', phone: '+92 300 1234567' },
+        { email: 'umair@eventai.pk', firstName: 'Umair', lastName: 'User', phone: '+92 300 7654321' },
+    ];
+
+    for (const u of platformUsers) {
+        const existing = await prisma.user.findUnique({ where: { email: u.email } });
+        if (existing) {
+            if (existing.status !== 'approved') {
+                await prisma.user.update({ where: { id: existing.id }, data: { status: 'approved', emailVerified: true } });
+                console.log(`  🔼 Approved existing user: ${u.email}`);
+            } else {
+                console.log(`  ⏭️  User ${u.email} already exists and is approved`);
+            }
+            continue;
+        }
+        await prisma.user.create({
+            data: {
+                email: u.email,
+                passwordHash: userPasswordHash,
+                firstName: u.firstName,
+                lastName: u.lastName,
+                phone: u.phone,
+                status: 'approved',
+                emailVerified: true,
+            },
+        });
+        console.log(`  ✅ Created user: ${u.email}`);
+    }
+
     // ====== SUMMARY ======
     const vendorCount = await prisma.vendor.count();
-    const userCount = await prisma.vendorUser.count();
+    const vendorUserCount = await prisma.vendorUser.count();
+    const platformUserCount = await prisma.user.count();
     const serviceCount = await prisma.service.count();
 
     console.log(`\n🎉 Database now has:`);
     console.log(`   📦 ${vendorCount} vendors`);
-    console.log(`   👤 ${userCount} users`);
+    console.log(`   👤 ${vendorUserCount} vendor users`);
+    console.log(`   👥 ${platformUserCount} platform users`);
     console.log(`   🛠️  ${serviceCount} services`);
 
     console.log('\n📧 Login credentials:');
@@ -280,6 +315,10 @@ async function main() {
     const admins = await prisma.vendorUser.findMany({ where: { role: 'admin' }, include: { vendor: true } });
     for (const u of admins) {
         console.log(`     • ${u.vendor.name}: ${u.email}`);
+    }
+    console.log('\n   Platform User accounts (password: User@2026):');
+    for (const u of platformUsers) {
+        console.log(`     • ${u.email}`);
     }
 }
 

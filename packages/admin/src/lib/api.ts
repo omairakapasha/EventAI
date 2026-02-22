@@ -35,8 +35,8 @@ export const getUsers = async () => {
 };
 
 export const updateUserStatus = async (id: string, status: string) => {
-    const response = await api.put(`/admin/users/${id}/status`, { status });
-    return response.data;
+    // Note: No backend endpoint exists for user status updates yet
+    throw new Error("User status updates are not supported by the backend API");
 };
 
 export const getStats = async () => {

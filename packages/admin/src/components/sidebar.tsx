@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Users, Store, Settings, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { cn } from "@repo/ui/lib/utils";
 
 const navigation = [
@@ -47,7 +48,10 @@ export function Sidebar() {
                 })}
             </nav>
             <div className="border-t border-gray-800 p-4">
-                <button className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white rounded-md">
+                <button
+                    onClick={() => signOut({ callbackUrl: "/login" })}
+                    className="flex w-full items-center px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white rounded-md"
+                >
                     <LogOut className="mr-3 h-6 w-6 text-gray-400" />
                     Sign Out
                 </button>
@@ -55,3 +59,4 @@ export function Sidebar() {
         </div>
     );
 }
+
